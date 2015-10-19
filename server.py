@@ -12,6 +12,11 @@ app = Flask(__name__)
 def home():
     now = datetime.datetime.now()
     return render_template('home.html', current_time=now.ctime())
+@app.route('/recurve_archery')
+def recurve_page():
+    now = datetime.datetime.now()
+    return render_template('recurve.html', current_time=now.ctime())
+
 
 
 if __name__ == '__main__':

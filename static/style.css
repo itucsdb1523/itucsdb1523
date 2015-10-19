@@ -1,5 +1,8 @@
 body {
-  background-color: white;
+  background-image: url(archery2.jpg);
+  background-repeat: no-repeat;
+  background-size:cover;
+  padding-top: 40px;
   color: #6F6F6F;
   font-family: 'Droid Sans', 'Helvetica', 'sans';
   font-size: 12pt;
@@ -7,12 +10,11 @@ body {
 }
 
 h1, h2, h3, h4 {
-  color: #2F7556;
+  color: #FF0000;
 }
 
 a {
   color: #6F6F6F;
-  text-decoration: underline;
 }
 
 div#datetime {
