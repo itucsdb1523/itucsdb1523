@@ -10,7 +10,7 @@ body {
 }
 
 h1, h2, h3, h4 {
-  color: #FF0000;
+  color: #820000;
 }
 
 a {
@@ -20,4 +20,24 @@ a {
 div#datetime {
   font-size: 80%;
   text-align: right;
+}
+
+form.form-signin {
+	max-width:500px;
+}
+
+.btn-block
+{
+	position: relative;
+	left:90px;
+	width:60%;
+}
+
+.myContainer
+{
+	margin-left:30%;
+}
+.btn-lg {
+    padding: 10px 9px;
+    margin:2px;
 }

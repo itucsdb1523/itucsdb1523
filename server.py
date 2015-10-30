@@ -8,14 +8,19 @@ from flask import render_template
 app = Flask(__name__)
 
 
-@app.route('/')
-def home():
+@app.route('/', methods=['GET', 'POST'])
+def home_page():
     now = datetime.datetime.now()
     return render_template('home.html', current_time=now.ctime())
 @app.route('/recurve_archery')
 def recurve_page():
     now = datetime.datetime.now()
     return render_template('recurve.html', current_time=now.ctime())
+
+@app.route('/sign_in')
+def sign_in_page():
+    now = datetime.datetime.now()
+    return render_template('sign_in.html', current_time=now.ctime())
 
 
 
