@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+<meta charset="utf-8" />
+
+{%extends "base.html"%}
+
+{%block title%}Scores{% endblock %}
+
+{% block link %}
+<link href="{{ url_for('static', filename='scores.css') }}" rel="stylesheet">
+{% endblock %}
+
+{%block content%}
+<body>
+    <h2>Scores table</h2>
+
+	<!-- Display score table and checkboxes for delete operation -->
+	<form action="{{ url_for('scores_page') }}" method="post">
+		<table>
+			<tr>
+				<td>ArcherId</td>
+				<td>TournamentId</td>
+				<td>Score</td>
+			</tr>
+			{% for key, score in scores %}
+			<tr>
+				<td>{{ score.archerId }}</td>
+				<td>{{ score.tournamentId }}</td>
+				<td>{{ score.score }}</td>
+				<td><input type="checkbox" name="scores_to_delete" value="{{ score.id }}" /></td>
+			</tr>
+			{% endfor %}
+		</table>
+		<input type="submit" value="Delete" name="delete" />
+		<h5>If you want to delete something check the box end click delete</h5>
+	</form>
+
+	<!-- Score table add operation -->
+	<h2>Add something to the score table</h2>
+	<form action="{{ url_for('scores_page') }}" method="post">
+		<table>
+			<tr>
+				<th>ArcherID:</th>
+				<td>
+					<input type="text" name="archer_id" required autofocus />
+				</td>
+			</tr>
+			<tr>
+				<th>TournamentID:</th>
+				<td>
+					<input type="text" name="tournament_id" required />
+				</td>
+			</tr>
+			<tr>
+				<th>Score:</th>
+				<td>
+					<input type="text" name="score" required />
+				</td>
+			</tr>
+		</table>
+		<input value="Save" name="save" type="submit" />
+	</form>
+
+</body>
+{%endblock%}

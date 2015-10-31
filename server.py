@@ -7,8 +7,12 @@ import psycopg2 as dbapi2
 from flask import Flask
 from flask import render_template
 from flask import redirect
+from flask import request
 from flask.helpers import url_for
 
+#import classes for score table
+from score import Score
+from scoreCol import ScoreCol
 
 app = Flask(__name__)
 
@@ -43,6 +47,19 @@ def initialize_database():
         query = """INSERT INTO COUNTER (N) VALUES (0)"""
         cursor.execute(query)
 
+        #initialize score table (empty)
+        query = """DROP TABLE IF EXISTS SCORE"""
+        cursor.execute(query)
+
+        query = """CREATE TABLE SCORE (
+            ID SERIAL PRIMARY KEY,
+            ARCHERID INTEGER,
+            TOURNAMENTID INTEGER,
+            SCORE INTEGER,
+            UNIQUE (ARCHERID, TOURNAMENTID)
+        )"""
+        cursor.execute(query)
+
         connection.commit()
     return redirect(url_for('home_page'))
 
@@ -59,6 +76,48 @@ def counter_page():
         cursor.execute(query)
         count = cursor.fetchone()[0]
     return 'This page was accessed %d times' % count
+
+@app.route('/archery_scores', methods=['GET', 'POST'])
+def scores_page():
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor = connection.cursor()
+
+        #display score table
+        if request.method == 'GET':
+            query = """SELECT ID, ARCHERID, TOURNAMENTID, SCORE FROM SCORE"""
+            cursor.execute(query)
+            s = ScoreCol()
+            for row in cursor:
+                id, archer_id, tournament_id, score = row
+                s.add_score(Score(id, archer_id,tournament_id,score))
+            scores = s.get_scores()
+
+            now = datetime.datetime.now()
+            return render_template('scores.html', current_time=now.ctime(), scores=scores)
+
+        #delete from score table
+        elif 'scores_to_delete' in request.form:
+            keys = request.form.getlist('scores_to_delete')
+            for key in keys:
+                query = """DELETE FROM SCORE WHERE (ID = %s)"""
+                cursor.execute(query,(key))
+
+            connection.commit()
+
+            return redirect(url_for('scores_page'))
+
+        #add to the score table
+        else:
+            archer_id = request.form['archer_id']
+            tournament_id = request.form['tournament_id']
+            score = request.form['score']
+
+            query = """INSERT INTO SCORE (ARCHERID, TOURNAMENTID, SCORE) VALUES (%s,%s,%s)"""
+            cursor.execute(query,(archer_id,tournament_id,score))
+
+            connection.commit()
+
+            return redirect(url_for('scores_page'))
 
 @app.route('/recurve_archery')
 def recurve_page():
