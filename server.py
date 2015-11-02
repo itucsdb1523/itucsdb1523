@@ -18,6 +18,11 @@ from scoreCol import ScoreCol
 #import classes for recurve_sportsmen table
 from recurve_sportsmen import Recurver
 from recurveCol import recurveCollection
+
+#import classes for game table
+from game import Game
+from gameCol import gameCol
+
 app = Flask(__name__)
 app.secret_key = 'F12Zr47j\3yX asdjEksmRRsstiTu?KT'
 
@@ -67,6 +72,20 @@ def initialize_database():
             TOURNAMENTID INTEGER,
             SCORE INTEGER,
             UNIQUE (ARCHERID, TOURNAMENTID)
+        )"""
+        cursor.execute(query)
+
+        #initialize games table (empty)
+        query = """DROP TABLE IF EXISTS GAMES"""
+        cursor.execute(query)
+
+        query = """CREATE TABLE GAMES (
+            ID SERIAL PRIMARY KEY,
+            name character varying(20) NOT NULL,
+            developer character varying(30),
+            publisher character varying(30),
+            year INTEGER,
+            UNIQUE (name)
         )"""
         cursor.execute(query)
 
@@ -503,6 +522,65 @@ def recurve_page():
     cursor.close()
     connection.close()
     return redirect(url_for('recurve_page'))
+@app.route('/video_games',methods=['GET', 'POST'])
+def games_page():
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor=connection.cursor()
+    now = datetime.datetime.now()
+    Message=""
+    #display games
+    if request.method == 'GET':
+        query="""SELECT * FROM games"""
+        cursor.execute(query)
+        allGames=gameCol()
+        for row in cursor:
+            id, name, developer, publisher, year = row
+            allGames.add_game(Game(id, name, developer, publisher, year))
+        cursor.close()
+        return render_template('games.html', games=allGames.get_games(), current_time=now.ctime(), rec_Message=Message)
+
+    #delete from recurve sportsmen
+    elif 'games_to_delete' in request.form:
+        keys = request.form.getlist('games_to_delete')
+        for key in keys:
+            statement="""DELETE FROM games WHERE (ID=%s)"""
+            cursor.execute(statement, (key,))
+        connection.commit()
+        cursor.close()
+        return redirect(url_for('games_page'))
+
+    #insert to recurve sportsmen
+    else:
+        new_name=request.form['name']
+        new_developer=request.form['developer']
+        new_publisher=request.form['publisher']
+        new_year=request.form['year']
+        #new_year=int(new_year)
+        Message="Insertion successfull!"
+        try:
+            if int(new_year)>datetime.datetime.today().year:
+                Message="Sorry, this game has not been released yet."
+                cursor.close()
+                connection.close()
+                return redirect(url_for('games_page'))
+            statement="""SELECT * FROM games WHERE NAME=%s"""
+            cursor.execute(statement, (new_name,))
+            game=cursor.fetchone()
+            if game is not None:
+                Message="Sorry, this game already exists."
+                cursor.close()
+                connection.close()
+                return redirect(url_for('games_page'))
+            else: #try to insert
+                statement="""INSERT INTO games (name, developer, publisher, year) VALUES(%s, %s, %s, %s)"""
+                cursor.execute(statement, (new_name, new_developer, new_publisher, new_year))
+                connection.commit()
+        except dbapi2.DatabaseError:
+            connection.rollback()
+            Message="Registration failed due to a Database Error."
+    cursor.close()
+    connection.close()
+    return redirect(url_for('games_page'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():

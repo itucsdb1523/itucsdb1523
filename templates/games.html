@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<link href="{{ url_for('static', filename='tablestyle.css') }}" rel="stylesheet">
+
+{%extends "base.html"%}
+
+{%block title%}Video Games about Archery{% endblock %}
+
+{%block content%}
+<body>
+
+<h1>--> Video Games about Archery <--</h1>
+<h4>This is the table of released video games about archery.</h4>
+<h4>You can add a new game with related details here.</h4>
+<h4>Adding an unreleased game is not allowed.</h4>
+  <div class="CSSTableGenerator">
+	<table>
+		<tr>
+			<td></td>
+			<td>Name</td>
+			<td>Developer</td>
+			<td>Publisher</td>
+			<td>Release year</td>
+		</tr>
+		<form action="{{ url_for('games_page') }}" method="post">
+        {% for key, game in games %}
+			<tr>
+				<td><input type="checkbox" name="games_to_delete" value="{{game.id}}" /></td>
+				<td> {{ game.name }} </td>
+				<td> {{ game.developer }} </td>
+				<td> {{ game.publisher }} </td>
+				<td> {{ game.year }} </td>
+			</tr>
+		{% endfor %}
+			<tr>
+				<td><input type="submit" class="form-control" value="Delete" name="insert"></td>
+		</form>
+		<form action="{{ url_for('games_page') }}" method="post">
+				<label for="inputName" class="sr-only">Name</label>
+	        	<td><input type="text" id="inputName" name="name" class="myinput" placeholder="Name of the game"></td>
+
+				<label for="inputDeveloper" class="sr-only">Surname</label>
+				<td><input type="text" id="inputDeveloper" name="developer" class="myinput" placeholder="Developer of the game"/></td>
+
+				<label for="inputPublisher" class="sr-only">Surname</label>
+				<td><input type="text" id="inputPublisher" name="publisher" class="myinput" placeholder="Publisher of the game"/></td>
+
+				<td><input type="text" id="inputYear" name="year" class="myinput" placeholder="Release year"/></td>
+			</tr>
+			</table>
+	</div>
+	<input type="submit" class="form-control" value="Add" name="insert">
+		<div class="error">
+		{{rec_Message}}
+		</div>
+		</form>
+
+{% endblock %}
