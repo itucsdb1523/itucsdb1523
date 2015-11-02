@@ -77,6 +77,12 @@ def initialize_database():
             )"""
         cursor.execute(query)
 
+
+
+
+        query = """ DROP TABLE IF EXISTS RECURVE_SPORTSMEN """
+        cursor.execute(query)
+
         #create countries table
         query = """ DROP TABLE IF EXISTS COUNTRIES """
         cursor.execute(query)
@@ -86,6 +92,17 @@ def initialize_database():
             country_code character varying(2) NOT NULL,
             name character varying(64) NOT NULL
             )"""
+        cursor.execute(query)
+
+        #create recursive_sportsmen table
+        query = """
+        CREATE TABLE recurve_sportsmen (
+        id serial PRIMARY KEY,
+        name character varying(20) NOT NULL,
+        surname character varying(30) NOT NULL,
+        birth_year integer,
+        country_id integer NOT NULL references countries(id)
+        )"""
         cursor.execute(query)
 
         #insert countries
@@ -355,19 +372,7 @@ def initialize_database():
         INSERT INTO countries VALUES (263, 'AX', 'Aland Islands');"""
         cursor.execute(query)
 
-        #create recursive_sportsmen table
-        query = """ DROP TABLE IF EXISTS RECURVE_SPORTSMEN """
-        cursor.execute(query)
 
-        query = """
-        CREATE TABLE recurve_sportsmen (
-        id serial PRIMARY KEY,
-        name character varying(20) NOT NULL,
-        surname character varying(30) NOT NULL,
-        birth_year integer,
-        country_id integer NOT NULL references countries(id)
-        )"""
-        cursor.execute(query)
         connection.commit()
     return redirect(url_for('home_page'))
 
@@ -452,7 +457,7 @@ def recurve_page():
     elif 'recurvers_to_delete' in request.form:
         keys = request.form.getlist('recurvers_to_delete')
         for key in keys:
-            statement="""DELETE FROM recurve_sportsmen WHERE ("ID"=%s)"""
+            statement="""DELETE FROM recurve_sportsmen WHERE (ID=%s)"""
             cursor.execute(statement, (key,))
         connection.commit()
         cursor.close()
