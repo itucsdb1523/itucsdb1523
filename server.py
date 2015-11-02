@@ -8,6 +8,7 @@ from flask import Flask
 from flask import render_template
 from flask import redirect
 from flask import request
+from flask import session
 from flask.helpers import url_for
 
 #import classes for score table
@@ -18,6 +19,7 @@ from scoreCol import ScoreCol
 from recurve_sportsmen import Recurver
 from recurveCol import recurveCollection
 app = Flask(__name__)
+app.secret_key = 'F12Zr47j\3yX asdjEksmRRsstiTu?KT'
 
 def get_elephantsql_dsn(vcap_services):
     """Returns the data source name for ElephantSQL."""
@@ -33,7 +35,12 @@ def get_elephantsql_dsn(vcap_services):
 @app.route('/', methods=['GET', 'POST'])
 def home_page():
     now = datetime.datetime.now()
-    return render_template('home.html', current_time=now.ctime())
+    if 'ecb_message' in session:
+        messageToShow=session['ecb_message']
+        session['ecb_message']=""
+    else:
+        messageToShow=""
+    return render_template('home.html', current_time=now.ctime(), Message=messageToShow)
 
 @app.route('/initdb')
 def initialize_database():
@@ -436,7 +443,11 @@ def scores_page():
 def recurve_page():
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor=connection.cursor()
-    Message=""
+        if 'ecb_message' in session:
+            messageToShow=session['ecb_message']
+            session['ecb_message']=""
+        else:
+            messageToShow=""
     #display recurvers
     if request.method == 'GET':
         statement="""SELECT * FROM countries"""
@@ -451,7 +462,7 @@ def recurve_page():
             id, name, surname, birth_year, country_id = row
             allRecurvers.add_recurver(Recurver(id, name, surname, birth_year, country_id))
         cursor.close()
-        return render_template('recurve.html', recurvers=allRecurvers.get_recurvers(), allCountries=countries, current_time=now.ctime(), rec_Message=Message, current_year=thisYear)
+        return render_template('recurve.html', recurvers=allRecurvers.get_recurvers(), allCountries=countries, current_time=now.ctime(), rec_Message=messageToShow, current_year=thisYear)
 
     #delete from recurve sportsmen
     elif 'recurvers_to_delete' in request.form:
@@ -461,6 +472,7 @@ def recurve_page():
             cursor.execute(statement, (key,))
         connection.commit()
         cursor.close()
+        session['ecb_message']="Successfully deleted!"
         return redirect(url_for('recurve_page'))
 
 
@@ -471,13 +483,13 @@ def recurve_page():
         new_age=request.form['age']
         new_country_id=request.form['country_id']
         new_birth_year=datetime.datetime.today().year-int(float(new_age))
-        Message="Insertion successfull!"
+        session['ecb_message']="Insertion successfull!"
         try:
             statement="""SELECT * FROM recurve_sportsmen WHERE (NAME=%s) AND (SURNAME=%s)"""
             cursor.execute(statement, (new_name, new_surname))
             recurver=cursor.fetchone()
             if recurver is not None:
-                Message="Sorry, this recurve sportsman already exists."
+                session['ecb_message']="Sorry, this recurve sportsman already exists."
                 cursor.close()
                 connection.close()
                 return redirect(url_for('recurve_page'))
@@ -487,7 +499,7 @@ def recurve_page():
                 connection.commit()
         except dbapi2.DatabaseError:
             connection.rollback()
-            Message="Registration failed due to a Database Error."
+            session['ecb_message']="Registration failed due to a Database Error."
     cursor.close()
     connection.close()
     return redirect(url_for('recurve_page'))
@@ -540,8 +552,13 @@ def register_page():
 @app.route('/sign_in',methods=['GET', 'POST'])
 def sign_in_page():
     now = datetime.datetime.now()
+    if 'ecb_message' in session:
+        messageToShow=session['ecb_message']
+        session['ecb_message']=""
+    else:
+        messageToShow=""
     if request.method == 'GET':
-        return render_template('sign_in.html', current_time=now.ctime(), message="")
+        return render_template('sign_in.html', current_time=now.ctime(), message=messageToShow)
     else:
         try:
             with dbapi2.connect(app.config['dsn']) as connection:
@@ -550,18 +567,34 @@ def sign_in_page():
             inputPassword=request.form['password']
             statement="""SELECT * FROM Users WHERE (EMAIL=%s) AND (PASSWORD=%s)"""
             cursor.execute(statement, (inputEmail, inputPassword))
-            users=cursor.fetchall()
+            users=cursor.fetchone()
         except dbapi2.DatabaseError:
             connection.rollback()
         finally:
             cursor.close()
             connection.close()
-        if len(users)==0:
+        if users is None:
             return render_template('sign_in.html', current_time=now.ctime(), message="Wrong email or password!")
         else:
-            return render_template('home.html', current_time=now.ctime())
+            session['username']=users[3]
+            return redirect(url_for('my_profile_page'))
+@app.route('/clear')
+def clear_all_session():
+    if 'username' in session:
+        session.clear()
+        session['ecb_message']="Logged out successfully!"
+    else:
+        session['ecb_message']="You are not logged in the system yet!"
+    return redirect(url_for('home_page'))
 
-
+@app.route('/profile')
+def my_profile_page():
+    now=datetime.datetime.now()
+    if 'username' in session:
+        return render_template('profile.html', current_time=now.ctime(), a_username=session['username'])
+    else:
+        session['ecb_message']="You need to log in first!"
+        return redirect(url_for('sign_in_page'))
 if __name__ == '__main__':
     VCAP_APP_PORT = os.getenv('VCAP_APP_PORT')
     if VCAP_APP_PORT is not None:
