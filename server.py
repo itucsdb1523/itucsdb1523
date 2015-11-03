@@ -522,6 +522,7 @@ def recurve_page():
     cursor.close()
     connection.close()
     return redirect(url_for('recurve_page'))
+
 @app.route('/video_games',methods=['GET', 'POST'])
 def games_page():
     with dbapi2.connect(app.config['dsn']) as connection:
