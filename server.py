@@ -132,17 +132,6 @@ def initialize_database():
         )"""
         cursor.execute(query)
 
-        #create competition table
-        query = """
-        CREATE TABLE Competition (
-        id integer NOT NULL
-        CompetitionName character varying(200),
-        CompType character varying(100),
-        Year integer,
-        CountryID integer references countries(id)
-        )"""
-        cursor.execute(query)
-
         #insert countries
         query = """
         INSERT INTO countries VALUES (1, 'AF', 'Afghanistan');
@@ -537,67 +526,7 @@ def recurve_page():
     cursor.close()
     connection.close()
     return redirect(url_for('recurve_page'))
-@app.route('/competition_archery', methods=['GET', 'POST'])
-def recurve_page():
-    with dbapi2.connect(app.config['dsn']) as connection:
-        cursor=connection.cursor()
-        if 'ecb_message' in session:
-            messageToShow=session['ecb_message']
-            session['ecb_message']=""
-        else:
-            messageToShow=""
-    #display
-    if request.method == 'GET':
-        statement="""SELECT * FROM Competitions"""
-        cursor.execute(statement)
-        countries=cursor.fetchall()
-        statement="""SELECT * FROM recurve_sportsmen"""
-        cursor.execute(statement)
-        allComps=compCollection()
-        for row in cursor:
-            id, name, Type, year, country_id = row
-            allRecurvers.add_recurver(Yarismaci(id, name, Type, year, country_id))
-        cursor.close()
-        return render_template('competition.html', comps=allCompss.get_comp(), allCountries=countries, current_time=now.ctime(), rec_Message=messageToShow, current_year=thisYear)
 
-    #delete competitions
-    elif 'comps_to_delete' in request.form:
-        keys = request.form.getlist('comps_to_delete')
-        for key in keys:
-            statement="""DELETE FROM Competitions WHERE (ID=%s)"""
-            cursor.execute(statement, (key,))
-        connection.commit()
-        cursor.close()
-        session['ecb_message']="Successfully deleted!"
-        return redirect(url_for('comp_page'))
-
-
-    #insert to
-    else:
-        new_name=request.form['CompetitionName']
-        new_Type=request.form['CompType']
-        new_year=request.form['Year']
-        new_country_id=request.form['Country_ID']
-        session['ecb_message']="Insertion successfull!"
-        try:
-            statement="""SELECT * FROM Competitions WHERE (CompetitionName=%s) AND (CompType=%s)"""
-            cursor.execute(statement, (new_name, new_Type))
-            yaris=cursor.fetchone()
-            if yaris is not None:
-                session['ecb_message']="Sorry, this recurve sportsman already exists."
-                cursor.close()
-                connection.close()
-                return redirect(url_for('comp_page'))
-            else: #try to insert
-                statement="""INSERT INTO Competitions (CompetitionName, CompType, Year, Country_ID) VALUES(%s, %s, %s, %s)"""
-                cursor.execute(statement, (new_name, new_Type, new_year, new_country_id))
-                connection.commit()
-        except dbapi2.DatabaseError:
-            connection.rollback()
-            session['ecb_message']="Registration failed due to a Database Error."
-    cursor.close()
-    connection.close()
-    return redirect(url_for('comp_page'))
 
 @app.route('/video_games',methods=['GET', 'POST'])
 def games_page():
