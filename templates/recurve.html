@@ -41,14 +41,15 @@
 		</form>
 		<form action="{{ url_for('recurve_page') }}" method="post">
 				<label for="inputName" class="sr-only">Name</label>
-	        	<td><input type="text" id="inputUsername" name="name" class="myinput" placeholder="Name"></td>
+	        	<td><input type="text" id="inputUsername" name="name" class="myinput" placeholder="Name" required autofocus></td>
 
 				<label for="inputSurname" class="sr-only">Surname</label>
-				<td><input type="text" id="inputSurname" class="myinput" name="surname" placeholder="Surname"/></td>
+				<td><input type="text" id="inputSurname" class="myinput" name="surname" placeholder="Surname" required/></td>
 
-				<td><input type="text" id="age" class="myinput" name="age" placeholder="Age"/></td>
+				<td><input type="number" min="18" max="100" id="age" class="myinput" name="age" placeholder="Age" required/></td>
 
-				<td><select class="form-control" name="country_id">
+				<td><select class="form-control" name="country_id" required>
+				<option></option>
 				{% for key, name, country_code in allCountries %}
 				<option value="{{allCountries[key-1][0]}}">{{allCountries[key-1][2]}}</option>
 				{% endfor %}
@@ -61,7 +62,6 @@
 		{{rec_Message}}
 		</div>
 		</form>
-
 {% endblock %}
 
 
