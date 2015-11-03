@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<link href="{{ url_for('static', filename='tablestyle.css') }}" rel="stylesheet">
+
+{%extends "base.html"%}
+
+{%block title%}Competition{% endblock %}
+
+
+{%block content%}
+<body>
+    <h1>Archery Competitions</h1>
+
+	<h2>Competitions</h2>
+
+	<div class="CSSTableGenerator">
+	<table>
+		<tr>
+			<td></td>
+			<td>Name</td>
+			<td>type</td>
+			<td>year</td>
+			<td>Country</td>
+		</tr>
+		<form action="{{ url_for('comp_page') }}" method="post">
+        {% for key, competition in competitions %}
+			<tr>
+				<td><input type="checkbox" name="comps_to_delete" value="{{comps.id}}" /></td>
+				<td> {{ comps.name }} </td>
+				<td> {{ comps.type}} </td>
+				<td> {{year }} </td>
+				<td> {{ allCountries[(comps.country_id)-1][2] }} </td>
+			</tr>
+		{% endfor %}
+			<tr>
+				<td><input type="submit" class="form-control" value="Delete" name="insert"></td>
+		</form>
+		<form action="{{ url_for('comp_page') }}" method="post">
+				<label for="inputName" class="sr-only">Name</label>
+	        	<td><input type="text" id="inputUsername" name="name" class="myinput" placeholder="Name" required autofocus></td>
+
+				<label for="inputType" class="sr-only">type</label>
+				<td><input type="text" id="inputType" class="myinput" name="CompType" placeholder="type" required/></td>
+
+				<td><input type="number" min="1900" max="2100" id="age" class="myinput" name="age" placeholder="Age" required/></td>
+
+				<td><select class="form-control" name="country_id" required>
+				<option></option>
+				{% for key, name, country_code in allCountries %}
+				<option value="{{allCountries[key-1][0]}}">{{allCountries[key-1][2]}}</option>
+				{% endfor %}
+				</select></td>
+			</tr>
+			</table>
+	</div>
+		<input type="submit" class="form-control" value="Add" name="insert">
+		<div class="error">
+		{{rec_Message}}
+		</div>
+		</form>
+{% endblock %}
+
+
+

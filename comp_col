@@ -1,0 +1,14 @@
+class CompCollection:
+    def __init__(self):
+        self.comps={}
+        self.last_key=0
+
+    def add_comp(self, competition):
+        self.last_key += 1
+        self.comps[self.last_key] = competition
+
+    def get_comp(self, key):
+        return self.comps[key]
+
+    def get_comp(self):
+        return sorted(self.comps.items())
