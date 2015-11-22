@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<link href="{{ url_for('static', filename='tablestyle.css') }}" rel="stylesheet">
+
+{%extends "base.html"%}
+
+{%block title%}Tournaments{% endblock %}
+
+
+{%block content%}
+<body>
+
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+
+	<div class="CSSTableGenerator">
+	<table>
+		<tr>
+			<td></td>
+			<td>Name</td>
+			<td>Country</td>
+			<td>Year</td>
+		</tr>
+		<form action="{{ url_for('tournament_page') }}" method="post">
+        {% for key, tournament in tournaments %}
+			<tr>
+				<td><input type="checkbox" name="tournaments_to_delete" value="{{tournament.id}}" /></td>
+				<td> {{ tournament.name }} </td>
+				<td> {{ allCountries[(tournament.country_id)-1][2] }} </td>
+				<td> {{ tournament.year }} </td>
+			</tr>
+		{% endfor %}
+			<tr>
+				<td><input type="submit" class="form-control" value="Delete" name="insert"></td>
+		</form>
+		<form action="{{ url_for('tournament_page') }}" method="post">
+	        	<td><input type="text" id="tournamentName" class="myinput" name="name"  placeholder="Tournament Name" required autofocus></td>
+
+				<td><select class="form-control" name="country_id" required>
+				<option></option>
+				{% for key, name, country_code in allCountries %}
+				<option value="{{allCountries[key-1][0]}}">{{allCountries[key-1][2]}}</option>
+				{% endfor %}
+				</select></td>
+
+				<td><input type="number" id="year" min="0" max="{{current_year}}" class="myinput" name="year" placeholder="Tournament Year" required/></td>
+
+			</tr>
+			</table>
+	</div>
+		<input type="submit" class="form-control" value="Add" name="insert">
+		<div class="error">
+		{{rec_Message}}
+		</div>
+		</form>
+{% endblock %}
+
+
+

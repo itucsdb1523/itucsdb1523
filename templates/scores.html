@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-<meta charset="utf-8" />
+	<link href="{{ url_for('static', filename='tablestyle.css') }}" rel="stylesheet">
 
 {%extends "base.html"%}
 
@@ -15,52 +15,46 @@
 <body>
     <h2>Scores table</h2>
 
-	<!-- Display score table and checkboxes for delete operation -->
-	<form action="{{ url_for('scores_page') }}" method="post">
-		<table>
+	<div class="CSSTableGenerator">
+	<table>
+		<tr>
+			<td></td>
+			<td>ArcherId</td>
+			<td>TournamentId</td>
+			<td>Score</td>
+		</tr>
+		<form action="{{ url_for('scores_page') }}" method="post">
+        {% for key, score in scores %}
 			<tr>
-				<td>ArcherId</td>
-				<td>TournamentId</td>
-				<td>Score</td>
-			</tr>
-			{% for key, score in scores %}
-			<tr>
+				<td><input type="checkbox" name="scoress_to_delete" value="{{score.id}}" /></td>
 				<td>{{ score.archerId }}</td>
 				<td>{{ score.tournamentId }}</td>
 				<td>{{ score.score }}</td>
-				<td><input type="checkbox" name="scores_to_delete" value="{{ score.id }}" /></td>
 			</tr>
-			{% endfor %}
-		</table>
-		<input type="submit" value="Delete" name="delete" />
-		<h5>If you want to delete something check the box end click delete</h5>
-	</form>
+		{% endfor %}
+			<tr>
+				<td><input type="submit" class="form-control" value="Delete" name="insert"></td>
+		</form>
+		<form action="{{ url_for('scores_page') }}" method="post">
 
-	<!-- Score table add operation -->
-	<h2>Add something to the score table</h2>
-	<form action="{{ url_for('scores_page') }}" method="post">
-		<table>
-			<tr>
-				<th>ArcherID:</th>
 				<td>
-					<input type="number" name="archer_id" required autofocus min="1" placeholder="Enter Archer ID" />
+					<input type="number" name="archer_id" class="myinput" required autofocus min="1" placeholder="Enter Archer ID" />
 				</td>
-			</tr>
-			<tr>
-				<th>TournamentID:</th>
 				<td>
-					<input type="number" name="tournament_id" required min="1" placeholder="Enter Tournemant ID" />
+					<input type="number" name="tournament_id" class="myinput" required min="1" placeholder="Enter Tournemant ID" />
 				</td>
-			</tr>
-			<tr>
-				<th>Score:</th>
 				<td>
-					<input type="number" name="score" required min="1" placeholder="Enter Score" />
+					<input type="number" name="score" class="myinput" required min="1" placeholder="Enter Score" />
 				</td>
+
 			</tr>
-		</table>
-		<input value="Save" name="save" type="submit" />
-	</form>
+			</table>
+	</div>
+		<input type="submit" class="form-control" value="Add" name="insert">
+		<div class="error">
+		{{rec_Message}}
+		</div>
+		</form>
 
 </body>
 {%endblock%}

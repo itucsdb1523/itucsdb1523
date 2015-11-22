@@ -19,6 +19,10 @@ from scoreCol import ScoreCol
 from recurve_sportsmen import Recurver
 from recurveCol import recurveCollection
 
+#import classes for tournament table
+from tournament import Tournament
+from tournamentCol import TournamentCol
+
 #import classes for game table
 from game import Game
 from gameCol import gameCol
@@ -63,19 +67,6 @@ def initialize_database():
         query = """INSERT INTO COUNTER (N) VALUES (0)"""
         cursor.execute(query)
 
-        #initialize score table (empty)
-        query = """DROP TABLE IF EXISTS SCORE"""
-        cursor.execute(query)
-
-        query = """CREATE TABLE SCORE (
-            ID SERIAL PRIMARY KEY,
-            ARCHERID INTEGER,
-            TOURNAMENTID INTEGER,
-            SCORE INTEGER,
-            UNIQUE (ARCHERID, TOURNAMENTID)
-        )"""
-        cursor.execute(query)
-
         #initialize games table (empty)
         query = """DROP TABLE IF EXISTS GAMES"""
         cursor.execute(query)
@@ -104,10 +95,13 @@ def initialize_database():
             )"""
         cursor.execute(query)
 
-
-
+        query = """DROP TABLE IF EXISTS SCORE"""
+        cursor.execute(query)
 
         query = """ DROP TABLE IF EXISTS RECURVE_SPORTSMEN """
+        cursor.execute(query)
+
+        query = """ DROP TABLE IF EXISTS TOURNAMENT"""
         cursor.execute(query)
 
         #create countries table
@@ -129,6 +123,25 @@ def initialize_database():
         surname character varying(30) NOT NULL,
         birth_year integer,
         country_id integer NOT NULL references countries(id)
+        )"""
+        cursor.execute(query)
+
+        #initialize tournament table
+        query="""CREATE TABLE TOURNAMENT(
+            ID SERIAL PRIMARY KEY,
+            NAME CHARACTER VARYING(50) NOT NULL,
+            COUNTRY_ID INTEGER NOT NULL REFERENCES COUNTRIES,
+            YEAR INTEGER
+        )"""
+        cursor.execute(query)
+
+        #initialize score table (empty)
+        query = """CREATE TABLE SCORE (
+            ID SERIAL PRIMARY KEY,
+            ARCHERID INTEGER REFERENCES recurve_sportsmen ON DELETE CASCADE ON UPDATE CASCADE,
+            TOURNAMENTID INTEGER REFERENCES TOURNAMENT ON DELETE CASCADE ON UPDATE CASCADE,
+            SCORE INTEGER,
+            UNIQUE (ARCHERID, TOURNAMENTID)
         )"""
         cursor.execute(query)
 
@@ -421,7 +434,11 @@ def counter_page():
 def scores_page():
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor = connection.cursor()
-
+        if 'ecb_message' in session:
+            messageToShow=session['ecb_message']
+            session['ecb_message']=""
+        else:
+            messageToShow=""
         #display score table
         if request.method == 'GET':
             query = """SELECT ID, ARCHERID, TOURNAMENTID, SCORE FROM SCORE"""
@@ -433,7 +450,7 @@ def scores_page():
             scores = s.get_scores()
 
             now = datetime.datetime.now()
-            return render_template('scores.html', current_time=now.ctime(), scores=scores)
+            return render_template('scores.html', current_time=now.ctime(), scores=scores, rec_Message=messageToShow)
 
         #delete from score table
         elif 'scores_to_delete' in request.form:
@@ -441,9 +458,8 @@ def scores_page():
             for key in keys:
                 query = """DELETE FROM SCORE WHERE (ID = %s)"""
                 cursor.execute(query,(key))
-
             connection.commit()
-
+            session['ecb_message']="Successfully deleted!"
             return redirect(url_for('scores_page'))
 
         #add to the score table
@@ -452,13 +468,32 @@ def scores_page():
             tournament_id = request.form['tournament_id']
             score = request.form['score']
 
-            query = """INSERT INTO SCORE (ARCHERID, TOURNAMENTID, SCORE) VALUES (%s,%s,%s)"""
-            cursor.execute(query,(archer_id,tournament_id,score))
+            try:
+                query="""SELECT * FROM SCORE WHERE (ARCHERID=%s) AND (TOURNAMENTID=%s)"""
+                cursor.execute(query, (archer_id, tournament_id))
+                s=cursor.fetchone()
+                if s is not None:
+                    session['ecb_message']="Sorry, this spesific score already exists."
+                    return redirect(url_for('scores_page'))
+                else: #check for archer and tournament
+                    query="""SELECT id FROM recurve_sportsmen WHERE (id=%s)"""
+                    cursor.execute(query, (archer_id,))
+                    archer=cursor.fetchone()
+                    query="""SELECT ID FROM TOURNAMENT WHERE (ID=%s)"""
+                    cursor.execute(query, (tournament_id,))
+                    tournament=cursor.fetchone()
+                    if archer is None or tournament is None:
+                        session['ecb_message']="Archer or the Tournament is not in our database! Check if they both exists in database."
+                    else:#insert
+                        query = """INSERT INTO SCORE (ARCHERID, TOURNAMENTID, SCORE) VALUES (%s,%s,%s)"""
+                        cursor.execute(query,(archer_id,tournament_id,score))
+                        connection.commit()
+                        session['ecb_message']="Insertion successfull!"
 
-            connection.commit()
-
-            return redirect(url_for('scores_page'))
-
+            except dbapi2.DatabaseError:
+                connection.rollback()
+                session['ecb_message']="Registration failed due to a Database Error."
+        return redirect(url_for('scores_page'))
 
 @app.route('/recurve_archery', methods=['GET', 'POST'])
 def recurve_page():
@@ -536,6 +571,60 @@ def recurve_page():
     connection.close()
     return redirect(url_for('recurve_page'))
 
+@app.route('/tournaments', methods=['GET', 'POST'])
+def tournament_page():
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor=connection.cursor()
+        if 'ecb_message' in session:
+            messageToShow=session['ecb_message']
+            session['ecb_message']=""
+        else:
+            messageToShow=""
+
+    #display tournaments
+    if request.method == 'GET':
+        query="""SELECT * FROM countries"""
+        cursor.execute(query)
+        countries=cursor.fetchall()
+        now = datetime.datetime.now()
+        thisYear=datetime.datetime.today().year
+        query="""SELECT * FROM TOURNAMENT"""
+        cursor.execute(query)
+        allTournaments=TournamentCol()
+        for row in cursor:
+            id, name, country_id, year = row
+            allTournaments.add_tournament(Tournament(id, name, country_id, year))
+        return render_template('tournament.html', tournaments=allTournaments.get_tournaments(), allCountries=countries, current_time=now.ctime(), rec_Message=messageToShow, current_year=thisYear)
+    #delete from recurve sportsmen
+    elif 'tournaments_to_delete' in request.form:
+        keys = request.form.getlist('tournaments_to_delete')
+        for key in keys:
+            query="""DELETE FROM TOURNAMENT WHERE (ID=%s)"""
+            cursor.execute(query, (key,))
+        connection.commit()
+        session['ecb_message']="Successfully deleted!"
+        return redirect(url_for('tournament_page'))
+    #insert to recurve sportsmen
+    else:
+        new_name=request.form['name']
+        new_country_id=request.form['country_id']
+        new_year=request.form['year']
+        try:
+            query="""SELECT * FROM TOURNAMENT WHERE (NAME=%s) AND (COUNTRY_ID=%s) AND (YEAR=%s)"""
+            cursor.execute(query, (new_name, new_country_id, new_year))
+            tournament=cursor.fetchone()
+            if tournament is not None:
+                session['ecb_message']="Sorry, this tournament already exists."
+                return redirect(url_for('tournament_page'))
+            else: #insert
+                query="""INSERT INTO TOURNAMENT (NAME, COUNTRY_ID, YEAR) VALUES(%s, %s, %s)"""
+                cursor.execute(query, (new_name, new_country_id, new_year))
+                connection.commit()
+                session['ecb_message']="Insertion successfull!"
+        except dbapi2.DatabaseError:
+            connection.rollback()
+            session['ecb_message']="Registration failed due to a Database Error."
+    return redirect(url_for('tournament_page'))
 
 @app.route('/video_games',methods=['GET', 'POST'])
 def games_page():
@@ -671,6 +760,7 @@ def sign_in_page():
         else:
             session['username']=users[3]
             return redirect(url_for('my_profile_page'))
+
 @app.route('/clear')
 def clear_all_session():
     if 'username' in session:
@@ -688,6 +778,7 @@ def my_profile_page():
     else:
         session['ecb_message']="You need to log in first!"
         return redirect(url_for('sign_in_page'))
+
 if __name__ == '__main__':
     VCAP_APP_PORT = os.getenv('VCAP_APP_PORT')
     if VCAP_APP_PORT is not None:
