@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-	<link href="{{ url_for('static', filename='tablestyle.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='tablestyle.css') }}" rel="stylesheet">
 
 {%extends "base.html"%}
 
@@ -14,54 +14,99 @@
     <h2>Recurve Bow</h2>
     <p>A recurve bow is a bow with limbs that curve away from the archer when unstrung. A recurve bow stores more energy and delivers energy more efficiently than an equivalent straight-limbed bow, giving a greater amount of energy and speed to the arrow. A recurve will permit a shorter bow than the simple straight limb bow for a given arrow energy and this form was often preferred by archers in environments where long weapons could be cumbersome, such as in brush and forest terrain, or while on horseback.</p>
     <h2>Modern Use</h2>
-	<p>The modern recurve is the only form of bow permitted in the Olympics (though the compound bow is permitted in some categories at the Paralympic Games) and is the most widely used by European and Asian sporting archers.</p>
-	<h2>Players</h2>
+  <p>The modern recurve is the only form of bow permitted in the Olympics (though the compound bow is permitted in some categories at the Paralympic Games) and is the most widely used by European and Asian sporting archers.</p>
+  <h2>Players</h2>
 
-	<div class="CSSTableGenerator">
-	<table>
-		<tr>
-			<td></td>
-			<td>Name</td>
-			<td>Surname</td>
-			<td>Age</td>
-			<td>Country</td>
-		</tr>
-		<form action="{{ url_for('recurve_page') }}" method="post">
+  <div class="CSSTableGenerator">
+  <table>
+    <tr>
+      <td></td>
+      <td>Name</td>
+      <td>Surname</td>
+      <td>Age</td>
+      <td>Country</td>
+      <td></td>
+    </tr>
+
+    <form id="form2" action="{{ url_for('recurve_page') }}" method="post">
         {% for key, recurver in recurvers %}
-			<tr>
-				<td><input type="checkbox" name="recurvers_to_delete" value="{{recurver.id}}" /></td>
-				<td> {{ recurver.name }} </td>
-				<td> {{ recurver.surname }} </td>
-				<td> {{ current_year-recurver.birth_year }} </td>
-				<td> {{ allCountries[(recurver.country_id)-1][2] }} </td>
-			</tr>
-		{% endfor %}
-			<tr>
-				<td><input type="submit" class="form-control" value="Delete" name="insert"></td>
-		</form>
-		<form action="{{ url_for('recurve_page') }}" method="post">
-				<label for="inputName" class="sr-only">Name</label>
-	        	<td><input type="text" id="inputUsername" name="name" class="myinput" placeholder="Name" required autofocus></td>
+      <tr>
+        <td><input type="checkbox" name="recurvers_to_delete" value="{{recurver.id}}" /></td>
+        <td> {{ recurver.name }} </td>
+        <td> {{ recurver.surname }} </td>
+        <td> {{ current_year-recurver.birth_year }} </td>
+        <td> {{ allCountries[(recurver.country_id)-1][2] }} </td>
+        <td><input type="radio" name="recurver_to_update" value="{{recurver.id}}" form="form1"/></td>
+      </tr>
+    {% endfor %}
+      <tr>
+        <td><input type="submit" class="form-control" value="Delete" name="delete"></td>
+    </form>
+    <form id="form1" action="{{ url_for('recurve_page') }}" method="post">
+        <label for="inputName" class="sr-only">Name</label>
+            <td><input type="text" id="inputUsername" name="name" class="myinput" placeholder="Name" required autofocus></td>
 
-				<label for="inputSurname" class="sr-only">Surname</label>
-				<td><input type="text" id="inputSurname" class="myinput" name="surname" placeholder="Surname" required/></td>
+        <label for="inputSurname" class="sr-only">Surname</label>
+        <td><input type="text" id="inputSurname" class="myinput" name="surname" placeholder="Surname" required/></td>
 
-				<td><input type="number" min="18" max="100" id="age" class="myinput" name="age" placeholder="Age" required/></td>
+        <td><input type="number" min="18" max="100" id="age" class="myinput" name="age" placeholder="Age" required/></td>
 
-				<td><select class="form-control" name="country_id" required>
-				<option></option>
-				{% for key, name, country_code in allCountries %}
-				<option value="{{allCountries[key-1][0]}}">{{allCountries[key-1][2]}}</option>
-				{% endfor %}
-				</select></td>
-			</tr>
-			</table>
-	</div>
-		<input type="submit" class="form-control" value="Add" name="insert">
-		<div class="error">
-		{{rec_Message}}
-		</div>
-		</form>
+        <td><select class="form-control" name="country_id" required>
+        <option></option>
+        {% for key, name, country_code in allCountries %}
+        <option value="{{allCountries[key-1][0]}}">{{allCountries[key-1][2]}}</option>
+        {% endfor %}
+        </select></td>
+        <td><input type="submit" class="form-control" value="Update" name="update"></td>
+      </tr>
+      </table>
+      <input type="submit" class="form-control" value="Add" name="insert">
+    </div>
+
+    <div class="error">
+    {{rec_Message}}
+    </div>
+    </form>
+
+    <h2>Find Sportsman</h2>
+    <div class="CSSTableGenerator">
+    <table>
+      <tr>
+        <td>Name</td>
+        <td>Surname</td>
+        <td>Age</td>
+        <td>Country</td>
+      </tr>
+      {% for key, recurver in searchRecurvers %}
+      <tr>
+        <td> {{ recurver.name }} </td>
+        <td> {{ recurver.surname }} </td>
+        <td> {{ current_year-recurver.birth_year }} </td>
+        <td> {{ allCountries[(recurver.country_id)-1][2] }} </td>
+      </tr>
+      {% endfor %}
+      <form action="{{ url_for('recurve_page') }}" method="post">
+      <tr>
+      	<label for="inputName" class="sr-only">Name</label>
+        <td><input type="text" id="inputUsername" name="name" class="myinput" placeholder="Name"></td>
+
+      	<label for="inputSurname" class="sr-only">Surname</label>
+        <td><input type="text" id="inputSurname" class="myinput" name="surname" placeholder="Surname" /></td>
+
+		<td><input type="number" min="18" max="100" id="age" class="myinput" name="age" placeholder="Age" /></td>
+
+      	<td><select class="form-control" name="country_id">
+        <option></option>
+        {% for key, name, country_code in allCountries %}
+        <option value="{{allCountries[key-1][0]}}">{{allCountries[key-1][2]}}</option>
+        {% endfor %}
+        </select></td>
+      </tr>
+
+    </table>
+    <input type="submit" class="form-control" value="Search" name="search">
+    </form>
+    </div>
 {% endblock %}
 
 

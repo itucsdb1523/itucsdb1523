@@ -460,8 +460,6 @@ def scores_page():
             return redirect(url_for('scores_page'))
 
 
-
-
 @app.route('/recurve_archery', methods=['GET', 'POST'])
 def recurve_page():
     with dbapi2.connect(app.config['dsn']) as connection:
@@ -487,6 +485,10 @@ def recurve_page():
         cursor.close()
         return render_template('recurve.html', recurvers=allRecurvers.get_recurvers(), allCountries=countries, current_time=now.ctime(), rec_Message=messageToShow, current_year=thisYear)
 
+    elif 'search' in request.form:
+        statement2="I will continue from here..."
+
+
     #delete from recurve sportsmen
     elif 'recurvers_to_delete' in request.form:
         keys = request.form.getlist('recurvers_to_delete')
@@ -499,7 +501,8 @@ def recurve_page():
         return redirect(url_for('recurve_page'))
 
 
-    #insert to recurve sportsmen
+
+    #INSERT to recurve sportsmen or UPDATE recurve sportsmen
     else:
         new_name=request.form['name']
         new_surname=request.form['surname']
@@ -516,6 +519,12 @@ def recurve_page():
                 cursor.close()
                 connection.close()
                 return redirect(url_for('recurve_page'))
+            elif 'recurver_to_update' in request.form:
+                session['ecb_message']="Update successfull!"
+                recurverID=request.form.get('recurver_to_update')
+                statement="""UPDATE recurve_sportsmen SET (name, surname, birth_year, country_id)=(%s, %s, %s, %s) WHERE (ID=%s)"""
+                cursor.execute(statement, (new_name, new_surname, new_birth_year, new_country_id, recurverID))
+                connection.commit()
             else: #try to insert
                 statement="""INSERT INTO recurve_sportsmen (name, surname, birth_year, country_id) VALUES(%s, %s, %s, %s)"""
                 cursor.execute(statement, (new_name, new_surname, new_birth_year, new_country_id))
