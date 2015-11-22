@@ -15,7 +15,6 @@
     <br>
     <br>
     <br>
-    <br>
 
 	<div class="CSSTableGenerator">
 	<table>
@@ -24,20 +23,22 @@
 			<td>Name</td>
 			<td>Country</td>
 			<td>Year</td>
+			<td></td>
 		</tr>
-		<form action="{{ url_for('tournament_page') }}" method="post">
+		<form id="form2" action="{{ url_for('tournament_page') }}" method="post">
         {% for key, tournament in tournaments %}
 			<tr>
 				<td><input type="checkbox" name="tournaments_to_delete" value="{{tournament.id}}" /></td>
 				<td> {{ tournament.name }} </td>
 				<td> {{ allCountries[(tournament.country_id)-1][2] }} </td>
 				<td> {{ tournament.year }} </td>
+				<td><input type="radio" name="tournament_to_update" value="{{tournament.id}}" form="form1"/></td>
 			</tr>
 		{% endfor %}
 			<tr>
 				<td><input type="submit" class="form-control" value="Delete" name="insert"></td>
 		</form>
-		<form action="{{ url_for('tournament_page') }}" method="post">
+		<form id="form1" action="{{ url_for('tournament_page') }}" method="post">
 	        	<td><input type="text" id="tournamentName" class="myinput" name="name"  placeholder="Tournament Name" required autofocus></td>
 
 				<td><select class="form-control" name="country_id" required>
@@ -48,6 +49,8 @@
 				</select></td>
 
 				<td><input type="number" id="year" min="0" max="{{current_year}}" class="myinput" name="year" placeholder="Tournament Year" required/></td>
+
+				<td><input type="submit" class="form-control" value="Update" name="update"></td>
 
 			</tr>
 			</table>

@@ -22,20 +22,22 @@
 			<td>ArcherId</td>
 			<td>TournamentId</td>
 			<td>Score</td>
+			<td></td>
 		</tr>
-		<form action="{{ url_for('scores_page') }}" method="post">
+		<form id="form2" action="{{ url_for('scores_page') }}" method="post">
         {% for key, score in scores %}
 			<tr>
-				<td><input type="checkbox" name="scoress_to_delete" value="{{score.id}}" /></td>
+				<td><input type="checkbox" name="scores_to_delete" value="{{score.id}}" /></td>
 				<td>{{ score.archerId }}</td>
 				<td>{{ score.tournamentId }}</td>
 				<td>{{ score.score }}</td>
+				<td><input type="radio" name="score_to_update" value="{{score.id}}" form="form1"/></td>
 			</tr>
 		{% endfor %}
 			<tr>
 				<td><input type="submit" class="form-control" value="Delete" name="insert"></td>
 		</form>
-		<form action="{{ url_for('scores_page') }}" method="post">
+		<form id="form1" action="{{ url_for('scores_page') }}" method="post">
 
 				<td>
 					<input type="number" name="archer_id" class="myinput" required autofocus min="1" placeholder="Enter Archer ID" />
@@ -46,6 +48,7 @@
 				<td>
 					<input type="number" name="score" class="myinput" required min="1" placeholder="Enter Score" />
 				</td>
+				<td><input type="submit" class="form-control" value="Update" name="update"></td>
 
 			</tr>
 			</table>

@@ -474,7 +474,6 @@ def scores_page():
                 s=cursor.fetchone()
                 if s is not None:
                     session['ecb_message']="Sorry, this spesific score already exists."
-                    return redirect(url_for('scores_page'))
                 else: #check for archer and tournament
                     query="""SELECT id FROM recurve_sportsmen WHERE (id=%s)"""
                     cursor.execute(query, (archer_id,))
@@ -484,6 +483,12 @@ def scores_page():
                     tournament=cursor.fetchone()
                     if archer is None or tournament is None:
                         session['ecb_message']="Archer or the Tournament is not in our database! Check if they both exists in database."
+                    elif 'score_to_update' in request.form: #update
+                        session['ecb_message']="Update successfull!"
+                        scoreID=request.form.get('score_to_update')
+                        query="""UPDATE SCORE SET (ARCHERID, TOURNAMENTID, SCORE)=(%s, %s, %s) WHERE (ID=%s)"""
+                        cursor.execute(query, (archer_id, tournament_id, score, scoreID))
+                        connection.commit()
                     else:#insert
                         query = """INSERT INTO SCORE (ARCHERID, TOURNAMENTID, SCORE) VALUES (%s,%s,%s)"""
                         cursor.execute(query,(archer_id,tournament_id,score))
@@ -616,6 +621,12 @@ def tournament_page():
             if tournament is not None:
                 session['ecb_message']="Sorry, this tournament already exists."
                 return redirect(url_for('tournament_page'))
+            elif 'tournament_to_update' in request.form: #update
+                session['ecb_message']="Update successfull!"
+                tournamentID=request.form.get('tournament_to_update')
+                query="""UPDATE TOURNAMENT SET (NAME, COUNTRY_ID, YEAR)=(%s, %s, %s) WHERE (ID=%s)"""
+                cursor.execute(query, (new_name, new_country_id, new_year, tournamentID))
+                connection.commit()
             else: #insert
                 query="""INSERT INTO TOURNAMENT (NAME, COUNTRY_ID, YEAR) VALUES(%s, %s, %s)"""
                 cursor.execute(query, (new_name, new_country_id, new_year))
