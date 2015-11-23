@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<link href="{{ url_for('static', filename='tablestyle.css') }}" rel="stylesheet">
+
+{%extends "base.html"%}
+
+{%block title%}Archery: The World Records{% endblock %}
+
+{%block content%}
+<body>
+
+<h1>--> Archery: The World Records <--</h1>
+<h4>This is the table of world records in archery.</h4>
+<h4>You can add a world record with related details here.</h4>
+  <div class="CSSTableGenerator">
+	<table>
+		<tr>
+			<td></td>
+			<td>Description</td>
+			<td>Score</td>
+			<td>Name</td>
+			<td>Nationality</td>
+			<td>Year</td>
+		</tr>
+		<form action="{{ url_for('worldrecords_page') }}" method="post">
+        {% for key, worldrecord in worldrecords %}
+			<tr>
+				<td><input type="checkbox" name="worldrecords_to_delete" value="{{worldrecord.id}}" /></td>
+				<td> {{ worldrecord.description }} </td>
+				<td> {{ worldrecord.score }} </td>
+				<td> {{ worldrecord.name }} </td>
+				<td> {{ worldrecord.nationality }} </td>
+				<td> {{ worldrecord.year }} </td>
+			</tr>
+		{% endfor %}
+			<tr>
+				<td><input type="submit" class="form-control" value="Delete" name="insert"></td>
+		</form>
+		<form action="{{ url_for('worldrecords_page') }}" method="post">
+				<label for="inputDescription" class="sr-only">Description</label>
+	        	<td><input type="text" id="inputDescription" name="description" class="myinput" placeholder="Description of the record"></td>
+
+	        	<label for="inputScore" class="sr-only">Score</label>
+	        	<td><input type="text" id="inputScore" name="score" class="myinput" placeholder="Score of the record"></td>
+
+				<label for="inputName" class="sr-only">Name</label>
+	        	<td><input type="text" id="inputName" name="name" class="myinput" placeholder="Name of the record holder"></td>
+
+				<label for="inputNationality" class="sr-only">Nationality</label>
+				<td><input type="text" id="inputPublisher" name="nationality" class="myinput" placeholder="Nationality of the record holder"/></td>
+
+				<td><input type="text" id="inputYear" name="year" class="myinput" placeholder="The year that record is set"/></td>
+			</tr>
+			</table>
+	</div>
+	<input type="submit" class="form-control" value="Add" name="insert">
+		<div class="error">
+		{{rec_Message}}
+		</div>
+		</form>
+
+{% endblock %}

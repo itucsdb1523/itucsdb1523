@@ -26,6 +26,11 @@ from tournamentCol import TournamentCol
 #import classes for game table
 from game import Game
 from gameCol import gameCol
+
+#import classes for world records table
+from wrecords import WorldRecord
+from wrecordsCol import wrecordsCol
+
 from _sqlite3 import Row
 
 app = Flask(__name__)
@@ -76,6 +81,21 @@ def initialize_database():
             name character varying(20) NOT NULL,
             developer character varying(30),
             publisher character varying(30),
+            year INTEGER,
+            UNIQUE (name)
+        )"""
+        cursor.execute(query)
+
+        #initialize world records table (empty)
+        query = """DROP TABLE IF EXISTS WORLDRECORDS"""
+        cursor.execute(query)
+
+        query = """CREATE TABLE WORLDRECORDS (
+            ID SERIAL PRIMARY KEY,
+            description character varying(40) NOT NULL,
+            score INTEGER,
+            name character varying(20) NOT NULL,
+            nationality character varying(30),
             year INTEGER,
             UNIQUE (name)
         )"""
@@ -654,7 +674,7 @@ def games_page():
         cursor.close()
         return render_template('games.html', games=allGames.get_games(), current_time=now.ctime(), rec_Message=Message)
 
-    #delete from recurve sportsmen
+    #delete from games
     elif 'games_to_delete' in request.form:
         keys = request.form.getlist('games_to_delete')
         for key in keys:
@@ -664,7 +684,7 @@ def games_page():
         cursor.close()
         return redirect(url_for('games_page'))
 
-    #insert to recurve sportsmen
+    #insert to games
     else:
         new_name=request.form['name']
         new_developer=request.form['developer']
@@ -696,6 +716,66 @@ def games_page():
     cursor.close()
     connection.close()
     return redirect(url_for('games_page'))
+
+@app.route('/worldrecords',methods=['GET', 'POST'])
+def worldrecords_page():
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor=connection.cursor()
+    now = datetime.datetime.now()
+    Message=""
+    #display worldrecords
+    if request.method == 'GET':
+        query="""SELECT * FROM worldrecords"""
+        cursor.execute(query)
+        allWorldRecords=wrecordsCol()
+        for row in cursor:
+            id, description, score, name, nationality, year = row
+            allWorldRecords.add_worldrecord(WorldRecord(id, description, score, name, nationality, year))
+        cursor.close()
+        return render_template('worldrecords.html', worldrecords=allWorldRecords.get_worldrecords(), current_time=now.ctime(), rec_Message=Message)
+
+    #delete from worldrecords
+    elif 'worldrecords_to_delete' in request.form:
+        keys = request.form.getlist('worldrecords_to_delete')
+        for key in keys:
+            statement="""DELETE FROM worldrecords WHERE (ID=%s)"""
+            cursor.execute(statement, (key,))
+        connection.commit()
+        cursor.close()
+        return redirect(url_for('worldrecords_page'))
+
+    #insert into worldrecords
+    else:
+        new_description=request.form['description']
+        new_score=request.form['score']
+        new_name=request.form['name']
+        new_nationality=request.form['nationality']
+        new_year=request.form['year']
+        Message="Insertion successfull!"
+        try:
+            if int(new_year)>datetime.datetime.today().year:
+                Message="Sorry, the year you've entered is in the future. Did you come back from the future?"
+                cursor.close()
+                connection.close()
+                return redirect(url_for('worldrecords_page'))
+            statement="""SELECT * FROM worldrecords WHERE NAME=%s"""
+            cursor.execute(statement, (new_name,))
+            game=cursor.fetchone()
+            if game is not None:
+                Message="Sorry, this record already exists in the table."
+                cursor.close()
+                connection.close()
+                return redirect(url_for('worldrecords_page'))
+            else: #try to insert
+                statement="""INSERT INTO worldrecords (description, score, name, nationality, year) VALUES(%s, %s, %s, %s, %s)"""
+                cursor.execute(statement, (new_description, new_score, new_name, new_nationality, new_year))
+                connection.commit()
+        except dbapi2.DatabaseError:
+            connection.rollback()
+            Message="Registration failed due to a Database Error."
+    cursor.close()
+    connection.close()
+    return redirect(url_for('worldrecords_page'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():
