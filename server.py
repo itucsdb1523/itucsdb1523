@@ -98,21 +98,6 @@ def initialize_database():
         )"""
         cursor.execute(query)
 
-        #initialize world records table (empty)
-        query = """DROP TABLE IF EXISTS WORLDRECORDS"""
-        cursor.execute(query)
-
-        query = """CREATE TABLE WORLDRECORDS (
-            ID SERIAL PRIMARY KEY,
-            description character varying(40) NOT NULL,
-            score INTEGER,
-            name character varying(20) NOT NULL,
-            nationality character varying(30),
-            year INTEGER,
-            UNIQUE (name)
-        )"""
-        cursor.execute(query)
-
         #create users table
         query = """ DROP TABLE IF EXISTS USERS """
         cursor.execute(query)
@@ -131,6 +116,9 @@ def initialize_database():
         cursor.execute(query)
 
         query = """ DROP TABLE IF EXISTS RECURVE_SPORTSMEN """
+        cursor.execute(query)
+
+        query = """DROP TABLE IF EXISTS WORLDRECORDS"""
         cursor.execute(query)
 
         query = """DROP TABLE IF EXISTS COMPETITIONS"""
@@ -154,6 +142,20 @@ def initialize_database():
             country_code character varying(2) NOT NULL,
             name character varying(64) NOT NULL
             )"""
+        cursor.execute(query)
+
+        #initialize world records table (empty)
+
+
+        query = """CREATE TABLE WORLDRECORDS (
+            ID SERIAL PRIMARY KEY,
+            description character varying(40) NOT NULL,
+            score INTEGER,
+            name character varying(20) NOT NULL,
+            country_id integer NOT NULL references countries(id),
+            year INTEGER,
+            UNIQUE (description)
+        )"""
         cursor.execute(query)
 
         #create recursive_sportsmen table
@@ -979,7 +981,6 @@ def archeryclubs_page():
     connection.close()
     return redirect(url_for('archeryclubs_page'))
 
-
 @app.route('/worldrecords',methods=['GET', 'POST'])
 def worldrecords_page():
     with dbapi2.connect(app.config['dsn']) as connection:
@@ -988,14 +989,17 @@ def worldrecords_page():
     Message=""
     #display worldrecords
     if request.method == 'GET':
+        q1="""SELECT * FROM countries"""
+        cursor.execute(q1)
+        countries=cursor.fetchall()
         query="""SELECT * FROM worldrecords"""
         cursor.execute(query)
         allWorldRecords=wrecordsCol()
         for row in cursor:
-            id, description, score, name, nationality, year = row
-            allWorldRecords.add_worldrecord(WorldRecord(id, description, score, name, nationality, year))
+            id, description, score, name, country_id, year = row
+            allWorldRecords.add_worldrecord(WorldRecord(id, description, score, name, country_id, year))
         cursor.close()
-        return render_template('worldrecords.html', worldrecords=allWorldRecords.get_worldrecords(), current_time=now.ctime(), rec_Message=Message)
+        return render_template('worldrecords.html', worldrecords=allWorldRecords.get_worldrecords(), allCountries=countries, current_time=now.ctime(), rec_Message=Message)
 
     #delete from worldrecords
     elif 'worldrecords_to_delete' in request.form:
@@ -1012,7 +1016,7 @@ def worldrecords_page():
         new_description=request.form['description']
         new_score=request.form['score']
         new_name=request.form['name']
-        new_nationality=request.form['nationality']
+        new_country_id=request.form['country_id']
         new_year=request.form['year']
         Message="Insertion successfull!"
         try:
@@ -1023,15 +1027,15 @@ def worldrecords_page():
                 return redirect(url_for('worldrecords_page'))
             statement="""SELECT * FROM worldrecords WHERE NAME=%s"""
             cursor.execute(statement, (new_name,))
-            game=cursor.fetchone()
-            if game is not None:
+            worldrecord=cursor.fetchone()
+            if worldrecord is not None:
                 Message="Sorry, this record already exists in the table."
                 cursor.close()
                 connection.close()
                 return redirect(url_for('worldrecords_page'))
             else: #try to insert
-                statement="""INSERT INTO worldrecords (description, score, name, nationality, year) VALUES(%s, %s, %s, %s, %s)"""
-                cursor.execute(statement, (new_description, new_score, new_name, new_nationality, new_year))
+                statement="""INSERT INTO worldrecords (description, score, name, country_id, year) VALUES(%s, %s, %s, %s, %s)"""
+                cursor.execute(statement, (new_description, new_score, new_name, new_country_id, new_year))
                 connection.commit()
         except dbapi2.DatabaseError:
             connection.rollback()

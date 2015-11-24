@@ -30,7 +30,7 @@
 				<td> {{ worldrecord.description }} </td>
 				<td> {{ worldrecord.score }} </td>
 				<td> {{ worldrecord.name }} </td>
-				<td> {{ worldrecord.nationality }} </td>
+				<td> {{ allCountries[(worldrecord.country_id)-1][2] }} </td>
 				<td> {{ worldrecord.year }} </td>
 			</tr>
 		{% endfor %}
@@ -47,8 +47,12 @@
 				<label for="inputName" class="sr-only">Name</label>
 	        	<td><input type="text" id="inputName" name="name" class="myinput" placeholder="Name of the record holder"></td>
 
-				<label for="inputNationality" class="sr-only">Nationality</label>
-				<td><input type="text" id="inputPublisher" name="nationality" class="myinput" placeholder="Nationality of the record holder"/></td>
+				<td><select class="form-control" name="country_id" required>
+     		    <option></option>
+     		    {% for key, name, country_code in allCountries %}
+     		    <option value="{{allCountries[key-1][0]}}">{{allCountries[key-1][2]}}</option>
+      		 	{% endfor %}
+       			</select></td>
 
 				<td><input type="text" id="inputYear" name="year" class="myinput" placeholder="The year that record is set"/></td>
 			</tr>
