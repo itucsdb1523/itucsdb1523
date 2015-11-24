@@ -31,6 +31,9 @@ from tournamentCol import TournamentCol
 from competition import Competitioner
 from CompetitionCol import CompetitionCollection
 
+from arc_clubs import archery_clubs
+from arc_clubsCol import ClubCollection
+
 #import classes for game table
 from game import Game
 from gameCol import gameCol
@@ -133,6 +136,9 @@ def initialize_database():
         query = """DROP TABLE IF EXISTS COMPETITIONS"""
         cursor.execute(query)
 
+        query = """DROP TABLE IF EXISTS ArcheryClubs"""
+        cursor.execute(query)
+
         query = """ DROP TABLE IF EXISTS COMPOUNDSPORTSMEN """
         cursor.execute(query)
 
@@ -202,6 +208,13 @@ def initialize_database():
         cursor.execute(query)
         ###arif
 
+        query="""CREATE TABLE ArcheryClubs(
+            ID SERIAL PRIMARY KEY,
+            CLUBNAME CHARACTER VARYING(200),
+            COUNTRYID INTEGER,
+            CLUBYEAR INTEGER
+        )"""
+        cursor.execute(query)
 
         #insert countries
         query = """
@@ -906,6 +919,65 @@ def compound_page():
     connection.close()
     return redirect(url_for('compound_page'))
 
+
+@app.route('/clubs_archery', methods=['GET', 'POST'])
+def archeryclubs_page():
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor=connection.cursor()
+        messageToShow=""
+    #display compounders
+    if request.method == 'GET':
+        statement="""SELECT * FROM ArcheryClubs"""
+        cursor.execute(statement)
+        countries=cursor.fetchall()
+        now = datetime.datetime.now()
+        thisYear=datetime.datetime.today().year
+        statement="""SELECT * FROM ArcheryClubs"""
+        cursor.execute(statement)
+        allClubs=ClubCollection()
+        for row in cursor:
+             ID, ClubName, CountryID, ClubYear = row
+             allClubs.add_club(club(ID, ClubName, CountryID, ClubYear))
+        cursor.close()
+        return render_template('arc_clubs.html', clubs=allClubs.get_clubs(), allCountries=countries, current_time=now.ctime(), rec_Message=messageToShow, current_year=thisYear)
+
+    #delete from recurve sportsmen
+    elif 'clubs_to_delete' in request.form:
+        keys = request.form.getlist('clubs_to_delete')
+        for key in keys:
+            statement="""DELETE FROM ArcheryClubs WHERE (ID=%s)"""
+            cursor.execute(statement, (key,))
+        connection.commit()
+        cursor.close()
+
+        return redirect(url_for('archeryclubs_page'))
+
+
+    #insert to recurve sportsmen
+    else:
+        new_name=request.form['ClubName']
+        new_country_id=request.form['country_id']
+        new_age=request.form['ClubYear']
+        new_birth_year=datetime.datetime.today().year-int(float(new_age))
+        try:
+            statement="""SELECT * FROM ARcheryClubs WHERE (CLUBNAME=%s)"""
+            cursor.execute(statement, (new_name))
+            club=cursor.fetchone()
+            if club is not None:
+
+                cursor.close()
+                connection.close()
+                return redirect(url_for('archeryclubs_page'))
+            else: #try to insert
+                statement="""INSERT INTO ArcheryClubs (Name, Lastname, BirthYear, CountryID) VALUES(%s, %s, %s, %s)"""
+                cursor.execute(statement, (new_name, new_birth_year, new_country_id))
+                connection.commit()
+        except dbapi2.DatabaseError:
+            connection.rollback()
+
+    cursor.close()
+    connection.close()
+    return redirect(url_for('archeryclubs_page'))
 
 
 @app.route('/worldrecords',methods=['GET', 'POST'])

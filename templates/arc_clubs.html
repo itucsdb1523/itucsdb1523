@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<link href="{{ url_for('static', filename='tablestyle.css') }}" rel="stylesheet">
+
+{%extends "base.html"%}
+
+{%block title%}Clubs{% endblock %}
+
+
+{%block content%}
+<body>
+    <h1>Archery Clubs</h1>
+	<div class="CSSTableGenerator">
+	<table>
+		<tr>
+			<td></td>
+			<td>Name</td>
+			<td>Country</td>
+			<td>Club Year</td>
+		</tr>
+		<form action="{{ url_for('archeryclubs_page') }}" method="post">
+        {% for key, club in clubs %}
+			<tr>
+				<td><input type="checkbox" Name="clubs_to_delete" value="{{club.ID}}" /></td>
+				<td> {{ club.ClubName }} </td>
+				<td> {{ allCountries[(club.CountryID)-1][2] }} </td>
+				<td> {{ current_year-club.ClubYear }} </td>
+
+			</tr>
+		{% endfor %}
+			<tr>
+				<td><input type="submit" class="form-control" value="Delete" Name="insert"></td>
+		</form>
+		<form action="{{ url_for('compound_page') }}" method="post">
+				<label for="inputName" class="sr-only">ClubName</label>
+	        	<td><input type="text" ID="inputUsername" Name="Name" class="myinput" placeholder="Name" required autofocus></td>
+
+				<td><input type="number" min="1" max="263" ID="age" class="myinput" name="age" placeholder="ID" required/></td>
+
+				<td><select class="form-control" Name="CountryID" required>
+				<option></option>
+				{% for key, name, country_code in allCountries %}
+				<option value="{{allCountries[key-1][0]}}">{{allCountries[key-1][2]}}</option>
+				{% endfor %}
+				</select></td>
+			</tr>
+			</table>
+	</div>
+		<input type="submit" class="form-control" value="Add" Name="insert">
+		<div class="error">
+		{{rec_Message}}
+		</div>
+		</form>
+{% endblock %}
+
+
+
