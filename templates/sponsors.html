@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<link href="{{ url_for('static', filename='tablestyle.css') }}" rel="stylesheet">
+
+{%extends "base.html"%}
+
+{%block title%}Sponsors{% endblock %}
+
+
+{%block content%}
+<body>
+    <h1>Sponsors</h1>
+    <h2>Sponsor Information</h2>
+	<h2>Sponsors</h2>
+	<div class="CSSTableGenerator">
+	<table>
+		<tr>
+			<td></td>
+			<td>SponsorName</td>
+			<td>Budget</td>
+			<td>Age</td>
+			<td>Country</td>
+		</tr>
+		<form action="{{ url_for('sponsors_page') }}" method="post">
+        {% for key, sponsor in sponsors %}
+			<tr>
+				<td><input type="checkbox" Name="sponsors_to_delete" value="{{sponsor.ID}}" /></td>
+				<td> {{ sponsor.SponsorName }} </td>
+				<td> {{ sponsor.budget }} </td>
+				<td> {{ current_year-sponsor.year }} </td>
+				<td> {{ allCountries[(sponsor.CountryID)-1][2] }} </td>
+			</tr>
+		{% endfor %}
+			<tr>
+				<td><input type="submit" class="form-control" value="Delete" Name="insert"></td>
+		</form>
+		<form action="{{ url_for('sponsors_page') }}" method="post">
+				<label for="inputName" class="sr-only">Name</label>
+	        	<td><input type="text" ID="inputUsername" SponsorName="SponsorName" class="myinput" placeholder="SponsorName" required autofocus></td>
+				<label for="inputSurname" class="sr-only">Last Name</label>
+				<td><input type="text" ID="inputSurname" class="myinput" Name="LastName" placeholder="LastName" required/></td>
+
+				<td><input type="number" min="18" max="100" ID="age" class="myinput" name="age" placeholder="Age" required/></td>
+
+				<td><select class="form-control" Name="CountryID" required>
+				<option></option>
+				{% for key, name, country_code in allCountries %}
+				<option value="{{allCountries[key-1][0]}}">{{allCountries[key-1][2]}}</option>
+				{% endfor %}
+				</select></td>
+			</tr>
+			</table>
+	</div>
+		<input type="submit" class="form-control" value="Add" Name="insert">
+		<div class="error">
+		{{rec_Message}}
+		</div>
+		</form>
+{% endblock %}
+
+
+

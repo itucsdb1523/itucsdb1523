@@ -38,6 +38,9 @@ from arc_clubsCol import ClubCollection
 from game import Game
 from gameCol import gameCol
 
+from Sponsors import Sponsor
+from SponsorCol import SponsorCollection
+
 #import classes for world records table
 from wrecords import WorldRecord
 from wrecordsCol import wrecordsCol
@@ -121,6 +124,9 @@ def initialize_database():
         query = """DROP TABLE IF EXISTS WORLDRECORDS"""
         cursor.execute(query)
 
+        query = """ DROP TABLE IF EXISTS SPONSORS """
+        cursor.execute(query)
+
         query = """DROP TABLE IF EXISTS COMPETITIONS"""
         cursor.execute(query)
 
@@ -179,6 +185,15 @@ def initialize_database():
         )"""
         cursor.execute(query)
 
+        query = """
+        CREATE TABLE Sponsors (
+        ID serial PRIMARY KEY,
+        SponsorName character varying(50) NOT NULL,
+        budget integer,
+        year integer,
+        CountryID integer NOT NULL references countries(id)
+        )"""
+        cursor.execute(query)
 
         #initialize tournament table
         query="""CREATE TABLE TOURNAMENT(
@@ -889,7 +904,7 @@ def compound_page():
         connection.commit()
         cursor.close()
         #alttaki message degismeli
-        session['ecb_message']="Successfully deleted!"
+        session['message']="Successfully deleted!"
         return redirect(url_for('compound_page'))
 
 
@@ -900,13 +915,13 @@ def compound_page():
         new_age=request.form['age']
         new_country_id=request.form['country_id']
         new_birth_year=datetime.datetime.today().year-int(float(new_age))
-        session['ecb_message']="Insertion successfull!"
+        session['message']="Insertion successfull!"
         try:
             statement="""SELECT * FROM CompoundSportsmen WHERE (NAME=%s) AND (LASTNAME=%s)"""
             cursor.execute(statement, (new_name, new_surname))
             compounder=cursor.fetchone()
             if compounder is not None:
-                session['ecb_message']="Sorry, this compound sportsman already exists."
+                session['message']="Sorry, this compound sportsman already exists."
                 cursor.close()
                 connection.close()
                 return redirect(url_for('compound_page'))
@@ -916,10 +931,72 @@ def compound_page():
                 connection.commit()
         except dbapi2.DatabaseError:
             connection.rollback()
-            session['ecb_message']="Registration failed due to a Database Error."
+            session['message']="Registration failed due to a Database Error."
     cursor.close()
     connection.close()
     return redirect(url_for('compound_page'))
+
+@app.route('/Sponsors', methods=['GET', 'POST'])
+def sponsors_page():
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor=connection.cursor()
+        messageToShow=""
+    #display compounders
+    if request.method == 'GET':
+        statement="""SELECT * FROM Sponsors"""
+        cursor.execute(statement)
+        countries=cursor.fetchall()
+        now = datetime.datetime.now()
+        thisYear=datetime.datetime.today().year
+        statement="""SELECT * FROM Sponsors"""
+        cursor.execute(statement)
+        allSponsors=SponsorCollection()
+        for row in cursor:
+            ID, SponsorName, year, budget, CountryID = row
+            allSponsors.add_sponsor(Sponsor(ID, SponsorName,year, budget, CountryID))
+        cursor.close()
+        return render_template('sponsors.html',sponsors=allSponsors.get_sponsors(), allCountries=countries, current_time=now.ctime(), rec_Message=messageToShow, current_year=thisYear)
+
+    #delete from recurve sportsmen
+    elif 'sponsors_to_delete' in request.form:
+        keys = request.form.getlist('sponsors_to_delete')
+        for key in keys:
+            statement="""DELETE FROM Sponsors WHERE (ID=%s)"""
+            cursor.execute(statement, (key,))
+        connection.commit()
+        cursor.close()
+        #alttaki message degismeli
+        session['message']="Successfully deleted!"
+        return redirect(url_for('sponsors_page'))
+
+
+    #insert to recurve sportsmen
+    else:
+        new_name=request.form['SponsorName']
+        new_budget=request.form['budget']
+        new_age=request.form['age']
+        new_country_id=request.form['country_id']
+        new_year=datetime.datetime.today().year-int(float(new_age))
+        session['message']="Insertion successfull!"
+        try:
+            statement="""SELECT * FROM Sponsors WHERE (SponsorNAME=%s)"""
+            cursor.execute(statement, (new_name))
+            sponsor=cursor.fetchone()
+            if sponsor is not None:
+                session['message']="Sorry, this sponsor already exists."
+                cursor.close()
+                connection.close()
+                return redirect(url_for('sponsors_page'))
+            else: #try to insert
+                statement="""INSERT INTO Sponsors (SponsorName, budget, year, CountryID) VALUES(%s, %s, %s, %s)"""
+                cursor.execute(statement, (new_name, new_budget, new_year, new_country_id))
+                connection.commit()
+        except dbapi2.DatabaseError:
+            connection.rollback()
+            session['message']="Registration failed due to a Database Error."
+    cursor.close()
+    connection.close()
+    return redirect(url_for('sponsors_page'))
 
 
 @app.route('/clubs_archery', methods=['GET', 'POST'])
