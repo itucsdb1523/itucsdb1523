@@ -27,6 +27,10 @@ from recurveCol import recurveCollection
 from tournament import Tournament
 from tournamentCol import TournamentCol
 
+#arif - import classes for Competitions table
+from competition import Competitioner
+from CompetitionCol import CompetitionCollection
+
 #import classes for game table
 from game import Game
 from gameCol import gameCol
@@ -36,7 +40,7 @@ from wrecords import WorldRecord
 from wrecordsCol import wrecordsCol
 
 from _sqlite3 import Row
-from wheel.signatures.djbec import pt_unxform
+#from wheel.signatures.djbec import pt_unxform
 
 app = Flask(__name__)
 app.secret_key = 'F12Zr47j\3yX asdjEksmRRsstiTu?KT'
@@ -126,6 +130,12 @@ def initialize_database():
         query = """ DROP TABLE IF EXISTS RECURVE_SPORTSMEN """
         cursor.execute(query)
 
+        query = """DROP TABLE IF EXISTS COMPETITIONS"""
+        cursor.execute(query)
+
+        query = """ DROP TABLE IF EXISTS COMPOUNDSPORTSMEN """
+        cursor.execute(query)
+
         query = """ DROP TABLE IF EXISTS TOURNAMENT"""
         cursor.execute(query)
 
@@ -149,9 +159,6 @@ def initialize_database():
         birth_year integer,
         country_id integer NOT NULL references countries(id)
         )"""
-        cursor.execute(query)
-
-        query = """ DROP TABLE IF EXISTS COMPOUNDSPORTSMEN """
         cursor.execute(query)
                 #create recursive_sportsmen table
         query = """
@@ -183,6 +190,18 @@ def initialize_database():
             UNIQUE (ARCHERID, TOURNAMENTID)
         )"""
         cursor.execute(query)
+
+        ###arif
+        query = """CREATE TABLE COMPETITIONS (
+        ID SERIAL PRIMARY KEY,
+        CompetitionName character varying(200),
+        CompType character varying(100),
+        Year INTEGER,
+        CountryID INTEGER
+        )"""
+        cursor.execute(query)
+        ###arif
+
 
         #insert countries
         query = """
@@ -623,6 +642,72 @@ def recurve_page():
     cursor.close()
     connection.close()
     return redirect(url_for('recurve_page'))
+
+###arif2
+@app.route('/achery_competition', methods=['GET', 'POST'])
+def competition_page():
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor=connection.cursor()
+        messageToShow=""
+    #display compounders
+    if request.method == 'GET':
+        statement="""SELECT * FROM countries"""
+        cursor.execute(statement)
+        countries=cursor.fetchall()
+        now = datetime.datetime.now()
+        thisYear=datetime.datetime.today().year
+        statement="""SELECT * FROM Competitions"""
+        cursor.execute(statement)
+        allCompetitions=CompetitionCollection()
+        for row in cursor:
+            ID, CompetitionName, CompType, Year, CountryID = row
+            allCompetitions=add_competitioner(Competitioner(ID, CompetitionName, CompType, Year, CountryID ))
+            cursor.close()
+            render_template('competitions.html', competitions = allCompetitions.get_competitioners(), current_time=now.ctime(), rec_Message=Message)
+        cursor.close()
+        connection.close()
+        return redirect(url_for('competition_page'))
+
+    elif 'competitions_to_delete' in request.form:
+        keys = request.form.getlist('competitions_to_delete')
+        for key in keys:
+            statement="""DELETE FROM Competitions WHERE (ID=%s)"""
+            cursor.execute(statement, (key,))
+        connection.commit()
+        cursor.close()
+        #alttaki message degismeli
+        session['mar_message']="Successfully deleted!"
+        return redirect(url_for('competition_page'))
+
+    #insert to recurve sportsmen
+    else:
+        new_name=request.form['CompetitionName']
+        new_type=request.form['CompType']
+        new_age=request.form['Year']
+        new_country_id=request.form['CountryID']
+        new_team_year=datetime.datetime.today().year-int(float(new_age))
+        session['mar_message']="Insertion successfull!"
+        try:
+            statement="""SELECT * FROM Competitions WHERE (CompetitionName=%s) AND (CompType=%s)"""
+            cursor.execute(statement, (new_name, new_type))
+            competitioner=cursor.fetchone()
+            if competitioner is not None:
+                session['mar_message']="Sorry, this competition already exists."
+                cursor.close()
+                connection.close()
+                return redirect(url_for('competition_page'))
+            else: #try to insert
+                statement="""INSERT INTO Competitions (CompetitionName, CompType, Year, CountryID) VALUES(%s, %s, %s, %s)"""
+                cursor.execute(statement, (new_name, new_type, new_team_year, new_country_id))
+                connection.commit()
+        except dbapi2.DatabaseError:
+            connection.rollback()
+            session['mar_message']="Registration failed due to a Database Error."
+    cursor.close()
+    connection.close()
+    return redirect(url_for('competition_page'))
+
+###arif2
 
 @app.route('/tournaments', methods=['GET', 'POST'])
 def tournament_page():

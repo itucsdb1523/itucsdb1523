@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<link href="{{ url_for('static', filename='tablestyle.css') }}" rel="stylesheet">
+
+{%extends "base.html"%}
+
+{%block title%}Competitions about Archery{% endblock %}
+
+{%block content%}
+<body>
+
+<h1>-->Archery Competitions <--</h1>
+<h4>This is the table of competitions about archery.</h4>
+<h4>You can add a new competition with related details here.</h4>
+
+ <div class="CSSTableGenerator">
+	<table>
+		<tr>
+			<td></td>
+			<td>Name_comp</td>
+			<td>Type_comp</td>
+			<td>Year_comp</td>
+			<td>Country_comp</td>
+		</tr>
+		<form action="{{ url_for('competition_page') }}" method="post">
+        {% for key, competition in competitions %}
+			<tr>
+				<td><input type="checkbox" name="competitions_to_delete" value="{{competition.id}}" /></td>
+				<td> {{ competition.Name_comp }} </td>
+				<td> {{ competition.Type_comp }} </td>
+				<td> {{ competition.Year_comp }} </td>
+				<td> {{ competition.Country_comp }} </td>
+			</tr>
+		{% endfor %}
+			<tr>
+				<td><input type="submit" class="form-control" value="Delete" name="insert"></td>
+		</form>
+		<form action='{{ url_for("competition_page") }}' method="post">
+				<label for="competitionName" class="sr-only">Name_comp</label>
+	        	<td><input type="text" id="competitionName" name="name" class="myinput" placeholder="Name of the competition"></td>
+
+				<label for="competitionType" class="sr-only">Type</label>
+				<td><input type="text" id="competitionType" name="type" class="myinput" placeholder="Type of the competition"/></td>
+
+				<td><input type="number" min="1900" max="2100" id="competitionYear" class="myinput" name="year" placeholder="Year of the competition"/></td>
+
+				<label for="inputCountry class="sr-only">Country</label>
+				<td><input type="text" id="competitionCountry" name="country" class="myinput" placeholder="Competition country"/></td>
+			</tr>
+			</table>
+	</div>
+	<input type="submit" class="form-control" value="Add" name="insert">
+		<div class="error">
+		{{rec_Message}}
+		</div>
+		</form>
+
+{% endblock %}
