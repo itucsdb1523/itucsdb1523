@@ -35,7 +35,7 @@
 			</tr>
 		{% endfor %}
 			<tr>
-				<td><input type="submit" class="form-control" value="Delete" name="insert"></td>
+				<td><input type="submit" class="form-control" value="Delete" name="action"></td>
 		</form>
 		<form id="form1" action="{{ url_for('scores_page') }}" method="post">
 
@@ -48,12 +48,12 @@
 				<td>
 					<input type="number" name="score" class="myinput" required min="1" placeholder="Enter Score" />
 				</td>
-				<td><input type="submit" class="form-control" value="Update" name="update"></td>
+				<td><input type="submit" class="form-control" value="Update" name="action"></td>
 
 			</tr>
 			</table>
 	</div>
-		<input type="submit" class="form-control" value="Add" name="insert">
+		<input type="submit" class="form-control" value="Add" name="action">
 		<div class="error">
 		{{rec_Message}}
 		</div>

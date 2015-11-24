@@ -32,6 +32,7 @@ from wrecords import WorldRecord
 from wrecordsCol import wrecordsCol
 
 from _sqlite3 import Row
+from wheel.signatures.djbec import pt_unxform
 
 app = Flask(__name__)
 app.secret_key = 'F12Zr47j\3yX asdjEksmRRsstiTu?KT'
@@ -487,34 +488,43 @@ def scores_page():
             archer_id = request.form['archer_id']
             tournament_id = request.form['tournament_id']
             score = request.form['score']
-
+            action = request.form['action']
+            print(action)
             try:
+                query="""SELECT id FROM recurve_sportsmen WHERE (id=%s)"""
+                cursor.execute(query, (archer_id,))
+                archer=cursor.fetchone()
+                query="""SELECT ID FROM TOURNAMENT WHERE (ID=%s)"""
+                cursor.execute(query, (tournament_id,))
+                tournament=cursor.fetchone()
+                if archer is None or tournament is None:
+                    session['ecb_message']="Archer or the Tournament is not in our database! Check if they both exists in database."
+                    return redirect(url_for('scores_page'))
+                
                 query="""SELECT * FROM SCORE WHERE (ARCHERID=%s) AND (TOURNAMENTID=%s)"""
                 cursor.execute(query, (archer_id, tournament_id))
                 s=cursor.fetchone()
-                if s is not None:
-                    session['ecb_message']="Sorry, this spesific score already exists."
-                else: #check for archer and tournament
-                    query="""SELECT id FROM recurve_sportsmen WHERE (id=%s)"""
-                    cursor.execute(query, (archer_id,))
-                    archer=cursor.fetchone()
-                    query="""SELECT ID FROM TOURNAMENT WHERE (ID=%s)"""
-                    cursor.execute(query, (tournament_id,))
-                    tournament=cursor.fetchone()
-                    if archer is None or tournament is None:
-                        session['ecb_message']="Archer or the Tournament is not in our database! Check if they both exists in database."
-                    elif 'score_to_update' in request.form: #update
-                        session['ecb_message']="Update successfull!"
+                print(s)
+                if action=='Update':
+                    if 'score_to_update' in request.form:
                         scoreID=request.form.get('score_to_update')
-                        query="""UPDATE SCORE SET (ARCHERID, TOURNAMENTID, SCORE)=(%s, %s, %s) WHERE (ID=%s)"""
-                        cursor.execute(query, (archer_id, tournament_id, score, scoreID))
-                        connection.commit()
-                    else:#insert
+                        if s is None or (s is not None and s[0]==int(scoreID)):
+                            query="""UPDATE SCORE SET (ARCHERID, TOURNAMENTID, SCORE)=(%s, %s, %s) WHERE (ID=%s)"""
+                            cursor.execute(query, (archer_id, tournament_id, score, scoreID))
+                            connection.commit()
+                            session['ecb_message']="Update successfull!"
+                        else:
+                             session['ecb_message']="Sorry, this specific score already exists."            
+                    else:
+                         session['ecb_message']="Nothing is selected to update!"
+                else:
+                    if s is not None:
+                        session['ecb_message']="Sorry, this specific score already exists."
+                    else:
                         query = """INSERT INTO SCORE (ARCHERID, TOURNAMENTID, SCORE) VALUES (%s,%s,%s)"""
                         cursor.execute(query,(archer_id,tournament_id,score))
                         connection.commit()
                         session['ecb_message']="Insertion successfull!"
-
             except dbapi2.DatabaseError:
                 connection.rollback()
                 session['ecb_message']="Registration failed due to a Database Error."
@@ -634,19 +644,21 @@ def tournament_page():
         new_name=request.form['name']
         new_country_id=request.form['country_id']
         new_year=request.form['year']
+        action=request.form['action']
         try:
             query="""SELECT * FROM TOURNAMENT WHERE (NAME=%s) AND (COUNTRY_ID=%s) AND (YEAR=%s)"""
             cursor.execute(query, (new_name, new_country_id, new_year))
             tournament=cursor.fetchone()
             if tournament is not None:
                 session['ecb_message']="Sorry, this tournament already exists."
-                return redirect(url_for('tournament_page'))
-            elif 'tournament_to_update' in request.form: #update
-                session['ecb_message']="Update successfull!"
+            elif 'tournament_to_update' in request.form and action=='Update': #update
                 tournamentID=request.form.get('tournament_to_update')
                 query="""UPDATE TOURNAMENT SET (NAME, COUNTRY_ID, YEAR)=(%s, %s, %s) WHERE (ID=%s)"""
                 cursor.execute(query, (new_name, new_country_id, new_year, tournamentID))
                 connection.commit()
+                session['ecb_message']="Update successfull!"
+            elif action=='Update':
+                session['ecb_message']="Nothing is selected to update!"
             else: #insert
                 query="""INSERT INTO TOURNAMENT (NAME, COUNTRY_ID, YEAR) VALUES(%s, %s, %s)"""
                 cursor.execute(query, (new_name, new_country_id, new_year))

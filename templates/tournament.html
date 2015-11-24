@@ -36,7 +36,7 @@
 			</tr>
 		{% endfor %}
 			<tr>
-				<td><input type="submit" class="form-control" value="Delete" name="insert"></td>
+				<td><input type="submit" class="form-control" value="Delete" name="action"></td>
 		</form>
 		<form id="form1" action="{{ url_for('tournament_page') }}" method="post">
 	        	<td><input type="text" id="tournamentName" class="myinput" name="name"  placeholder="Tournament Name" required autofocus></td>
@@ -50,12 +50,12 @@
 
 				<td><input type="number" id="year" min="0" max="{{current_year}}" class="myinput" name="year" placeholder="Tournament Year" required/></td>
 
-				<td><input type="submit" class="form-control" value="Update" name="update"></td>
+				<td><input type="submit" class="form-control" value="Update" name="action"></td>
 
 			</tr>
 			</table>
 	</div>
-		<input type="submit" class="form-control" value="Add" name="insert">
+		<input type="submit" class="form-control" value="Add" name="action">
 		<div class="error">
 		{{rec_Message}}
 		</div>
