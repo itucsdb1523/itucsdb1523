@@ -576,8 +576,11 @@ def recurve_page():
             session['ecb_message']=""
         else:
             messageToShow=""
+    justSearch=False
+    if 'search' in request.form:
+        justSearch=True
     #display recurvers
-    if request.method == 'GET':
+    if request.method == 'GET' or justSearch:
         statement="""SELECT * FROM countries"""
         cursor.execute(statement)
         countries=cursor.fetchall()
@@ -589,11 +592,19 @@ def recurve_page():
         for row in cursor:
             id, name, surname, birth_year, country_id = row
             allRecurvers.add_recurver(Recurver(id, name, surname, birth_year, country_id))
+        foundRecurverCol=recurveCollection()
+        if 'search' in request.form:
+            st="""SELECT * FROM recurve_sportsmen WHERE ("""+request.form['filter_by']+"""=%s)"""
+            searchText=request.form['text']
+            if request.form['filter_by'] == "birth_year":
+                searchText=datetime.datetime.today().year-int(request.form['text'])
+            cursor.execute(st, (searchText,))
+            for row in cursor:
+                id, name, surname, birth_year, country_id = row
+                foundRecurverCol.add_recurver(Recurver(id, name, surname, birth_year, country_id))
         cursor.close()
-        return render_template('recurve.html', recurvers=allRecurvers.get_recurvers(), allCountries=countries, current_time=now.ctime(), rec_Message=messageToShow, current_year=thisYear)
+        return render_template('recurve.html', recurvers=allRecurvers.get_recurvers(), searchRecurvers=foundRecurverCol.get_recurvers(), allCountries=countries, current_time=now.ctime(), rec_Message=messageToShow, current_year=thisYear)
 
-    elif 'search' in request.form:
-        statement2="I will continue from here..."
 
 
     #delete from recurve sportsmen
@@ -1041,11 +1052,36 @@ def clear_all_session():
         session['ecb_message']="You are not logged in the system yet!"
     return redirect(url_for('home_page'))
 
-@app.route('/profile')
+@app.route('/profile',methods=['GET', 'POST'])
 def my_profile_page():
     now=datetime.datetime.now()
     if 'username' in session:
-        return render_template('profile.html', current_time=now.ctime(), a_username=session['username'])
+        successMessage=""
+        check=False
+        if request.method == 'POST':
+             with dbapi2.connect(app.config['dsn']) as connection:
+                 cursor=connection.cursor()
+             inputEmail=request.form['email']
+             inputnewPassword=request.form['newPassword']
+             inputPassword=request.form['password']
+             statement="""SELECT * FROM Users WHERE (username=%s) AND (password=%s)"""
+             cursor.execute(statement, (session['username'], inputPassword))
+             myUser=cursor.fetchone()
+             if myUser is None:
+                 errorMessage="Current password is wrong!"
+                 return render_template('profile.html', Message=errorMessage, current_time=now.ctime(), a_username=session['username'])
+             if inputEmail is not "":
+                 statement="""UPDATE users SET (email)=(%s) WHERE (username=%s)"""
+                 cursor.execute(statement,(inputEmail, session['username']))
+                 check=True
+             if inputnewPassword is not "":
+                 statement="""UPDATE users SET (password)=(%s) WHERE (username=%s)"""
+                 cursor.execute(statement,(inputnewPassword, session['username']))
+                 check=True
+             if check:
+                 connection.commit()
+                 successMessage="Your information has been updated successfully!"
+        return render_template('profile.html', Message=successMessage, current_time=now.ctime(), a_username=session['username'])
     else:
         session['ecb_message']="You need to log in first!"
         return redirect(url_for('sign_in_page'))

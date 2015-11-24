@@ -69,6 +69,18 @@
     </form>
 
     <h2>Find Sportsman</h2>
+	<form id="form3" action="{{ url_for('recurve_page') }}" method="post">
+		<div class="search">
+		<select class="myinput" name="filter_by">
+		   	<option value="name"> Search by Name </option>
+		   	<option value="surname"> Search by Surname </option>
+		   	<option value="birth_year"> Search by Age </option>
+	   	</select>
+	   	<label for="text" class="sr-only">Search</label>
+		<input type="text" id="inputUsername" name="text" class="myinput" placeholder="Search">
+		<input type="submit" class="myinput" value="search" name="search">
+		</div>
+	</form>
     <div class="CSSTableGenerator">
     <table>
       <tr>
@@ -85,27 +97,8 @@
         <td> {{ allCountries[(recurver.country_id)-1][2] }} </td>
       </tr>
       {% endfor %}
-      <form action="{{ url_for('recurve_page') }}" method="post">
-      <tr>
-      	<label for="inputName" class="sr-only">Name</label>
-        <td><input type="text" id="inputUsername" name="name" class="myinput" placeholder="Name"></td>
-
-      	<label for="inputSurname" class="sr-only">Surname</label>
-        <td><input type="text" id="inputSurname" class="myinput" name="surname" placeholder="Surname" /></td>
-
-		<td><input type="number" min="18" max="100" id="age" class="myinput" name="age" placeholder="Age" /></td>
-
-      	<td><select class="form-control" name="country_id">
-        <option></option>
-        {% for key, name, country_code in allCountries %}
-        <option value="{{allCountries[key-1][0]}}">{{allCountries[key-1][2]}}</option>
-        {% endfor %}
-        </select></td>
-      </tr>
 
     </table>
-    <input type="submit" class="form-control" value="Search" name="search">
-    </form>
     </div>
 {% endblock %}
 
