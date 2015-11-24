@@ -15,6 +15,10 @@ from flask.helpers import url_for
 from score import Score
 from scoreCol import ScoreCol
 
+#kerem - import classes for CompoundSportsmen table
+from CompoundSportsmen import Compounder
+from CompoundCol import CompoundCollection
+
 #import classes for recurve_sportsmen table
 from recurve_sportsmen import Recurver
 from recurveCol import recurveCollection
@@ -146,6 +150,20 @@ def initialize_database():
         country_id integer NOT NULL references countries(id)
         )"""
         cursor.execute(query)
+
+        query = """ DROP TABLE IF EXISTS COMPOUNDSPORTSMEN """
+        cursor.execute(query)
+                #create recursive_sportsmen table
+        query = """
+        CREATE TABLE CompoundSportsmen (
+        ID serial PRIMARY KEY,
+        Name character varying(20) NOT NULL,
+        LastName character varying(30) NOT NULL,
+        BirthYear integer,
+        CountryID integer NOT NULL references countries(id)
+        )"""
+        cursor.execute(query)
+
 
         #initialize tournament table
         query="""CREATE TABLE TOURNAMENT(
@@ -500,7 +518,7 @@ def scores_page():
                 if archer is None or tournament is None:
                     session['ecb_message']="Archer or the Tournament is not in our database! Check if they both exists in database."
                     return redirect(url_for('scores_page'))
-                
+
                 query="""SELECT * FROM SCORE WHERE (ARCHERID=%s) AND (TOURNAMENTID=%s)"""
                 cursor.execute(query, (archer_id, tournament_id))
                 s=cursor.fetchone()
@@ -514,7 +532,7 @@ def scores_page():
                             connection.commit()
                             session['ecb_message']="Update successfull!"
                         else:
-                             session['ecb_message']="Sorry, this specific score already exists."            
+                             session['ecb_message']="Sorry, this specific score already exists."
                     else:
                          session['ecb_message']="Nothing is selected to update!"
                 else:
@@ -728,6 +746,71 @@ def games_page():
     cursor.close()
     connection.close()
     return redirect(url_for('games_page'))
+
+#kerem
+@app.route('/compound_archery', methods=['GET', 'POST'])
+def compound_page():
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor=connection.cursor()
+        messageToShow=""
+    #display compounders
+    if request.method == 'GET':
+        statement="""SELECT * FROM countries"""
+        cursor.execute(statement)
+        countries=cursor.fetchall()
+        now = datetime.datetime.now()
+        thisYear=datetime.datetime.today().year
+        statement="""SELECT * FROM CompoundSportsmen"""
+        cursor.execute(statement)
+        allCompounders=CompoundCollection()
+        for row in cursor:
+            ID, Name, LastName, BirthYear, CountryID = row
+            allCompounders.add_compounder(Compounder(ID, Name, LastName, BirthYear, CountryID))
+        cursor.close()
+        return render_template('compound.html', compounders=allCompounders.get_compounders(), allCountries=countries, current_time=now.ctime(), rec_Message=messageToShow, current_year=thisYear)
+
+    #delete from recurve sportsmen
+    elif 'compounders_to_delete' in request.form:
+        keys = request.form.getlist('compounders_to_delete')
+        for key in keys:
+            statement="""DELETE FROM CompoundSportsmen WHERE (ID=%s)"""
+            cursor.execute(statement, (key,))
+        connection.commit()
+        cursor.close()
+        #alttaki message degismeli
+        session['ecb_message']="Successfully deleted!"
+        return redirect(url_for('compound_page'))
+
+
+    #insert to recurve sportsmen
+    else:
+        new_name=request.form['Name']
+        new_surname=request.form['LastName']
+        new_age=request.form['age']
+        new_country_id=request.form['country_id']
+        new_birth_year=datetime.datetime.today().year-int(float(new_age))
+        session['ecb_message']="Insertion successfull!"
+        try:
+            statement="""SELECT * FROM CompoundSportsmen WHERE (NAME=%s) AND (LASTNAME=%s)"""
+            cursor.execute(statement, (new_name, new_surname))
+            compounder=cursor.fetchone()
+            if compounder is not None:
+                session['ecb_message']="Sorry, this compound sportsman already exists."
+                cursor.close()
+                connection.close()
+                return redirect(url_for('compound_page'))
+            else: #try to insert
+                statement="""INSERT INTO CompoundSportsmen (Name, Lastname, BirthYear, CountryID) VALUES(%s, %s, %s, %s)"""
+                cursor.execute(statement, (new_name, new_surname, new_birth_year, new_country_id))
+                connection.commit()
+        except dbapi2.DatabaseError:
+            connection.rollback()
+            session['ecb_message']="Registration failed due to a Database Error."
+    cursor.close()
+    connection.close()
+    return redirect(url_for('compound_page'))
+
+
 
 @app.route('/worldrecords',methods=['GET', 'POST'])
 def worldrecords_page():

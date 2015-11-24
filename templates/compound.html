@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<link href="{{ url_for('static', filename='tablestyle.css') }}" rel="stylesheet">
+
+{%extends "base.html"%}
+
+{%block title%}Compound{% endblock %}
+
+
+{%block content%}
+<body>
+    <h1>Compound Archery</h1>
+    <h2>Compound Bow</h2>
+    <p>A compound bow is a modern bow that uses a levering system, usually of cables and pulleys, to bend the limbs.The pulley/cam system grants the wielder a mechanical advantage, and so the limbs of a compound bow are much stiffer than those of a recurve bow or longbow. This rigidity makes the compound bow more energy-efficient than other bows, as less energy is dissipated in limb movement. The higher-rigidity, higher-technology construction also improves accuracy by reducing the bow's sensitivity to changes in temperature and humidity.</p>
+	<h2>Players</h2>
+	<div class="CSSTableGenerator">
+	<table>
+		<tr>
+			<td></td>
+			<td>Name</td>
+			<td>Last Name</td>
+			<td>Age</td>
+			<td>Country</td>
+		</tr>
+		<form action="{{ url_for('compound_page') }}" method="post">
+        {% for key, compounder in compounders %}
+			<tr>
+				<td><input type="checkbox" Name="compounders_to_delete" value="{{compounder.ID}}" /></td>
+				<td> {{ compounder.Name }} </td>
+				<td> {{ compounder.LastName }} </td>
+				<td> {{ current_year-compounder.BirthYear }} </td>
+				<td> {{ allCountries[(compounder.CountryID)-1][2] }} </td>
+			</tr>
+		{% endfor %}
+			<tr>
+				<td><input type="submit" class="form-control" value="Delete" Name="insert"></td>
+		</form>
+		<form action="{{ url_for('compound_page') }}" method="post">
+				<label for="inputName" class="sr-only">Name</label>
+	        	<td><input type="text" ID="inputUsername" Name="Name" class="myinput" placeholder="Name" required autofocus></td>
+
+				<label for="inputSurname" class="sr-only">Last Name</label>
+				<td><input type="text" ID="inputSurname" class="myinput" Name="LastName" placeholder="LastName" required/></td>
+
+				<td><input type="number" min="18" max="100" ID="age" class="myinput" name="age" placeholder="Age" required/></td>
+
+				<td><select class="form-control" Name="CountryID" required>
+				<option></option>
+				{% for key, name, country_code in allCountries %}
+				<option value="{{allCountries[key-1][0]}}">{{allCountries[key-1][2]}}</option>
+				{% endfor %}
+				</select></td>
+			</tr>
+			</table>
+	</div>
+		<input type="submit" class="form-control" value="Add" Name="insert">
+		<div class="error">
+		{{rec_Message}}
+		</div>
+		</form>
+{% endblock %}
+
+
+
