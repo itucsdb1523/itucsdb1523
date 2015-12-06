@@ -24,13 +24,13 @@
 			<td>Country_comp</td>
 		</tr>
 		<form action="{{ url_for('competition_page') }}" method="post">
-        {% for key, competition in competitions %}
+        {% for key, competitioner in competitioners %}
 			<tr>
-				<td><input type="checkbox" name="competitions_to_delete" value="{{competition.id}}" /></td>
-				<td> {{ competition.Name_comp }} </td>
-				<td> {{ competition.Type_comp }} </td>
-				<td> {{ competition.Year_comp }} </td>
-				<td> {{ competition.Country_comp }} </td>
+				<td><input type="checkbox" name="competitions_to_delete" value="{{competitioner.id}}" /></td>
+				<td> {{ competitioner.CompetitionName }} </td>
+				<td> {{ competitioner.CompType }} </td>
+				<td> {{ competitioner.Year }} </td>
+				<td> {{ allCountries[(competitioner.CountryID)-1][2] }} </td>
 			</tr>
 		{% endfor %}
 			<tr>
@@ -38,15 +38,15 @@
 		</form>
 		<form action='{{ url_for("competition_page") }}' method="post">
 				<label for="competitionName" class="sr-only">Name_comp</label>
-	        	<td><input type="text" id="competitionName" name="name" class="myinput" placeholder="Name of the competition"></td>
+	        	<td><input type="text" id="competitionName" name="name" class="myinput" placeholder="CompetitionName"></td>
 
 				<label for="competitionType" class="sr-only">Type</label>
-				<td><input type="text" id="competitionType" name="type" class="myinput" placeholder="Type of the competition"/></td>
+				<td><input type="text" id="competitionType" name="type" class="myinput" placeholder="CompType"/></td>
 
-				<td><input type="number" min="1900" max="2100" id="competitionYear" class="myinput" name="year" placeholder="Year of the competition"/></td>
+				<td><input type="number" min="1900" max="2100" id="competitionYear" class="myinput" name="year" placeholder="Year"/></td>
 
 				<label for="inputCountry class="sr-only">Country</label>
-				<td><input type="text" id="competitionCountry" name="country" class="myinput" placeholder="Competition country"/></td>
+				<td><input type="text" id="competitionCountry" name="country" class="myinput" placeholder="CountryID"/></td>
 			</tr>
 			</table>
 	</div>

@@ -220,7 +220,7 @@ def initialize_database():
         CompetitionName character varying(200),
         CompType character varying(100),
         Year INTEGER,
-        CountryID INTEGER
+        CountryID INTEGER NOT NULL references countries(id)
         )"""
         cursor.execute(query)
         ###arif
@@ -228,7 +228,7 @@ def initialize_database():
         query="""CREATE TABLE ArcheryClubs(
             ID SERIAL PRIMARY KEY,
             CLUBNAME CHARACTER VARYING(200),
-            COUNTRYID INTEGER,
+            COUNTRYID INTEGER NOT NULL references countries(id),
             CLUBYEAR INTEGER
         )"""
         cursor.execute(query)
@@ -699,15 +699,13 @@ def competition_page():
         thisYear=datetime.datetime.today().year
         statement="""SELECT * FROM Competitions"""
         cursor.execute(statement)
-        allCompetitions=CompetitionCollection()
+        allCompetitioners=CompetitionCollection()
         for row in cursor:
             ID, CompetitionName, CompType, Year, CountryID = row
-            allCompetitions=add_competitioner(Competitioner(ID, CompetitionName, CompType, Year, CountryID ))
-            cursor.close()
-            render_template('competitions.html', competitions = allCompetitions.get_competitioners(), current_time=now.ctime(), rec_Message=Message)
+            allCompetitioners=add_competitioner(Competitioner(ID, CompetitionName, CompType, Year, CountryID ))
         cursor.close()
-        connection.close()
-        return redirect(url_for('competition_page'))
+        return render_template('competitions.html', competitioners = allCompetitioners.get_competitioners(), current_time=now.ctime(), rec_Message=messageToShow)
+
 
     elif 'competitions_to_delete' in request.form:
         keys = request.form.getlist('competitions_to_delete')
