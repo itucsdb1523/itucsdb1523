@@ -25,7 +25,7 @@
 				<td><input type="checkbox" Name="clubs_to_delete" value="{{club.ID}}" /></td>
 				<td> {{ club.ClubName }} </td>
 				<td> {{ allCountries[(club.CountryID)-1][2] }} </td>
-				<td> {{ current_year-club.ClubYear }} </td>
+				<td> {{ club.ClubYear }} </td>
 
 			</tr>
 		{% endfor %}
@@ -38,12 +38,9 @@
 
 				<td><input type="number" min="1" max="263" ID="age" class="myinput" name="age" placeholder="ID" required/></td>
 
-				<td><select class="form-control" Name="CountryID" required>
-				<option></option>
-				{% for key, name, country_code in allCountries %}
-				<option value="{{allCountries[key-1][0]}}">{{allCountries[key-1][2]}}</option>
-				{% endfor %}
-				</select></td>
+
+				<td><input type="number" id="year" min="1900" max="{{current_year}}" ID="age" class="myinput" name="year" placeholder="year" required/></td>
+
 			</tr>
 			</table>
 	</div>
