@@ -45,6 +45,10 @@ from SponsorCol import SponsorCollection
 from wrecords import WorldRecord
 from wrecordsCol import wrecordsCol
 
+#import classes for olympic medals table
+from medal import Medal
+from medalCol import medalCol
+
 from _sqlite3 import Row
 #from wheel.signatures.djbec import pt_unxform
 
@@ -124,6 +128,9 @@ def initialize_database():
         query = """DROP TABLE IF EXISTS WORLDRECORDS"""
         cursor.execute(query)
 
+        query = """DROP TABLE IF EXISTS MEDALS"""
+        cursor.execute(query)
+
         query = """ DROP TABLE IF EXISTS SPONSORS """
         cursor.execute(query)
 
@@ -150,9 +157,29 @@ def initialize_database():
             )"""
         cursor.execute(query)
 
+        #create GAMETYPES table
+        query = """ DROP TABLE IF EXISTS GAMETYPES """
+        cursor.execute(query)
+
+        query = """CREATE TABLE GAMETYPES (
+            id serial PRIMARY KEY,
+            game_code character varying(2) NOT NULL,
+            name character varying(25) NOT NULL
+            )"""
+        cursor.execute(query)
+
+        #create GAMETYPES table
+        query = """ DROP TABLE IF EXISTS MEDALTYPES """
+        cursor.execute(query)
+
+        query = """CREATE TABLE MEDALTYPES (
+            id serial PRIMARY KEY,
+            medal_code character varying(2) NOT NULL,
+            name character varying(7) NOT NULL
+            )"""
+        cursor.execute(query)
+
         #initialize world records table (empty)
-
-
         query = """CREATE TABLE WORLDRECORDS (
             ID SERIAL PRIMARY KEY,
             description character varying(40) NOT NULL,
@@ -161,6 +188,17 @@ def initialize_database():
             country_id integer NOT NULL references countries(id),
             year INTEGER,
             UNIQUE (description)
+        )"""
+        cursor.execute(query)
+
+        #initialize world records table (empty)
+        query = """CREATE TABLE MEDALS (
+            ID SERIAL PRIMARY KEY,
+            name character varying(20) NOT NULL,
+            gameType_id integer NOT NULL references gametypes(id),
+            country_id integer NOT NULL references countries(id),
+            medalType_id integer NOT NULL references medaltypes(id),
+            year INTEGER
         )"""
         cursor.execute(query)
 
@@ -231,6 +269,21 @@ def initialize_database():
             COUNTRYID INTEGER NOT NULL references countries(id),
             CLUBYEAR INTEGER
         )"""
+        cursor.execute(query)
+
+        #insert gametypes
+        query = """
+        INSERT INTO GAMETYPES VALUES (1, 'MI', 'Mens Individual');
+        INSERT INTO GAMETYPES VALUES (2, 'WI', 'Womens Individual');
+        INSERT INTO GAMETYPES VALUES (3, 'MT', 'Mens Team');
+        INSERT INTO GAMETYPES VALUES (4, 'WT', 'Womens Team');"""
+        cursor.execute(query)
+
+        #insert medaltypes
+        query = """
+        INSERT INTO MEDALTYPES VALUES (1, 'G', 'Gold');
+        INSERT INTO MEDALTYPES VALUES (2, 'S', 'Silver');
+        INSERT INTO MEDALTYPES VALUES (3, 'B', 'Bronze');"""
         cursor.execute(query)
 
         #insert countries
@@ -1118,6 +1171,67 @@ def worldrecords_page():
     cursor.close()
     connection.close()
     return redirect(url_for('worldrecords_page'))
+
+@app.route('/medals',methods=['GET', 'POST'])
+def medals_page():
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor=connection.cursor()
+    now = datetime.datetime.now()
+    Message=""
+    #display medals
+    if request.method == 'GET':
+        q1="""SELECT * FROM countries"""
+        cursor.execute(q1)
+        countries=cursor.fetchall()
+        q2="""SELECT * FROM GAMETYPES"""
+        cursor.execute(q2)
+        gametypes=cursor.fetchall()
+        q3="""SELECT * FROM MEDALTYPES"""
+        cursor.execute(q3)
+        medaltypes=cursor.fetchall()
+        query="""SELECT * FROM medals"""
+        cursor.execute(query)
+        allMedals=medalCol()
+        for row in cursor:
+            id, name, gameType_id, country_id, medalType_id, year = row
+            allMedals.add_medal(Medal(id, name, gameType_id, country_id, medalType_id, year))
+        cursor.close()
+        return render_template('medals.html', medals=allMedals.get_medals(), allCountries=countries, allMedalTypes=medaltypes, allGameTypes=gametypes, current_time=now.ctime(), rec_Message=Message)
+
+    #delete from medals
+    elif 'medals_to_delete' in request.form:
+        keys = request.form.getlist('medals_to_delete')
+        for key in keys:
+            statement="""DELETE FROM medals WHERE (ID=%s)"""
+            cursor.execute(statement, (key,))
+        connection.commit()
+        cursor.close()
+        return redirect(url_for('medals_page'))
+
+    #insert into worldrecords
+    else:
+        new_name=request.form['name']
+        new_gameType_id=request.form['gameType_id']
+        new_country_id=request.form['country_id']
+        new_medalType_id=request.form['medalType_id']
+        new_year=request.form['year']
+        Message="Insertion successfull!"
+        try:
+            if int(new_year)>datetime.datetime.today().year:
+                Message="Sorry, the year you've entered is in the future. Did you come back from the future?"
+                cursor.close()
+                connection.close()
+                return redirect(url_for('medals_page'))
+            #try to insert
+            statement="""INSERT INTO medals (name, gameType_id, country_id, medalType_id, year) VALUES(%s, %s, %s, %s, %s)"""
+            cursor.execute(statement, (new_name, new_gameType_id, new_country_id, new_medalType_id, new_year))
+            connection.commit()
+        except dbapi2.DatabaseError:
+            connection.rollback()
+            Message="Registration failed due to a Database Error."
+    cursor.close()
+    connection.close()
+    return redirect(url_for('medals_page'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register_page():

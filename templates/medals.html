@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<link href="{{ url_for('static', filename='tablestyle.css') }}" rel="stylesheet">
+
+{%extends "base.html"%}
+
+{%block title%}Olympic Medals in Archery{% endblock %}
+
+{%block content%}
+<body>
+
+<h1>--> Olympic Medals in Archery <--</h1>
+<h4>This is the table of olympic medals in archery.</h4>
+<h4>You can add a medal with related details here.</h4>
+  <div class="CSSTableGenerator">
+	<table>
+		<tr>
+			<td></td>
+			<td>Name</td>
+			<td>Nationality</td>
+			<td>Game Type</td>
+			<td>Medal Type</td>
+			<td>Year</td>
+		</tr>
+		<form action="{{ url_for('medals_page') }}" method="post">
+        {% for key, medal in medals %}
+			<tr>
+				<td><input type="checkbox" name="medals_to_delete" value="{{medal.id}}" /></td>
+				<td> {{ medal.name }} </td>
+				<td> {{ allCountries[(medal.country_id)-1][2] }} </td>
+				<td> {{ allGameTypes[(medal.gameType_id)-1][2] }} </td>
+				<td> {{ allMedalTypes[(medal.medalType_id)-1][2] }} </td>
+				<td> {{ medal.year }} </td>
+			</tr>
+		{% endfor %}
+			<tr>
+				<td><input type="submit" class="form-control" value="Delete" name="insert"></td>
+		</form>
+		<form action="{{ url_for('medals_page') }}" method="post">
+				<label for="inputDescription" class="sr-only">Name</label>
+	        	<td><input type="text" id="inputDescription" name="name" class="myinput" placeholder="Name of the medalist or team"></td>
+
+				<td><select class="form-control" name="country_id" required>
+     		    <option></option>
+     		    {% for key, name, country_code in allCountries %}
+     		    <option value="{{allCountries[key-1][0]}}">{{allCountries[key-1][2]}}</option>
+      		 	{% endfor %}
+       			</select></td>
+
+				<td><select class="form-control" name="gameType_id" required>
+     		    <option></option>
+     		    {% for key, name, game_code in allGameTypes %}
+     		    <option value="{{allGameTypes[key-1][0]}}">{{allGameTypes[key-1][2]}}</option>
+      		 	{% endfor %}
+       			</select></td>
+
+       			<td><select class="form-control" name="medalType_id" required>
+     		    <option></option>
+     		    {% for key, name, medal_code in allMedalTypes %}
+     		    <option value="{{allMedalTypes[key-1][0]}}">{{allMedalTypes[key-1][2]}}</option>
+      		 	{% endfor %}
+       			</select></td>
+
+				<td><input type="text" id="inputYear" name="year" class="myinput" placeholder="Year of the medal"/></td>
+			</tr>
+			</table>
+	</div>
+	<input type="submit" class="form-control" value="Add" name="insert">
+		<div class="error">
+		{{rec_Message}}
+		</div>
+		</form>
+
+{% endblock %}
