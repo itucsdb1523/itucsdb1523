@@ -755,22 +755,19 @@ def competition_page():
         allCompetitioners=CompetitionCollection()
         for row in cursor:
             ID, CompetitionName, CompType, Year, CountryID = row
-            allCompetitioners=add_competitioner(Competitioner(ID, CompetitionName, CompType, Year, CountryID ))
+            allCompetitioners.add_competitioner(Competitioner(ID, CompetitionName, CompType, Year, CountryID ))
         cursor.close()
-        return render_template('competitions.html', competitioners = allCompetitioners.get_competitioners(), current_time=now.ctime(), rec_Message=messageToShow)
+        return render_template('competitions.html', competitioners = allCompetitioners.get_competitioners(),allCountries=countries, current_time=now.ctime(), rec_Message=messageToShow)
 
 
     elif 'competitions_to_delete' in request.form:
         keys = request.form.getlist('competitions_to_delete')
         for key in keys:
-            statement="""DELETE FROM Competitions WHERE (ID=%s)"""
-            cursor.execute(statement, (key,))
+             statement="""DELETE FROM competitions WHERE (ID=%s)"""
+             cursor.execute(statement,(key,))
         connection.commit()
         cursor.close()
-        #alttaki message degismeli
-        session['mar_message']="Successfully deleted!"
         return redirect(url_for('competition_page'))
-
     #insert to recurve sportsmen
     else:
         new_name=request.form['CompetitionName']
@@ -1057,7 +1054,7 @@ def archeryclubs_page():
         messageToShow=""
     #display compounders
     if request.method == 'GET':
-        statement="""SELECT * FROM ArcheryClubs"""
+        statement="""SELECT * FROM countries"""
         cursor.execute(statement)
         countries=cursor.fetchall()
         now = datetime.datetime.now()
@@ -1086,21 +1083,20 @@ def archeryclubs_page():
     #insert to recurve sportsmen
     else:
         new_name=request.form['ClubName']
-        new_country_id=request.form['country_id']
+        new_country_id=request.form['countryid']
         new_age=request.form['ClubYear']
-        new_birth_year=datetime.datetime.today().year-int(float(new_age))
+
         try:
             statement="""SELECT * FROM ARcheryClubs WHERE (CLUBNAME=%s)"""
-            cursor.execute(statement, (new_name))
+            cursor.execute(statement, (new_name,))
             club=cursor.fetchone()
             if club is not None:
-
                 cursor.close()
                 connection.close()
                 return redirect(url_for('archeryclubs_page'))
             else: #try to insert
-                statement="""INSERT INTO ArcheryClubs (Name, Lastname, BirthYear, CountryID) VALUES(%s, %s, %s, %s)"""
-                cursor.execute(statement, (new_name, new_birth_year, new_country_id))
+                statement="""INSERT INTO ArcheryClubs (Name, CountryID, ClubYear) VALUES(%s, %s, %s)"""
+                cursor.execute(statement, (new_name, new_country_id, new_age))
                 connection.commit()
         except dbapi2.DatabaseError:
             connection.rollback()

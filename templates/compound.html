@@ -45,7 +45,7 @@
 
 				<td><input type="number" min="18" max="100" ID="age" class="myinput" name="age" placeholder="Age" required/></td>
 
-				<td><select class="form-control" Name="CountryID" required>
+				<td><select class="form-control" Name="country_id" required>
 				<option></option>
 				{% for key, name, country_code in allCountries %}
 				<option value="{{allCountries[key-1][0]}}">{{allCountries[key-1][2]}}</option>
