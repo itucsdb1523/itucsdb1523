@@ -52,6 +52,9 @@ from medalCol import medalCol
 from compoundteam import CompoundTeam
 from compoundteamcol import CompoundTeamCollection
 
+#import classes for mounted_sportsmen table
+from mountedSportsmen import MountedArcher
+from MountedCol import MountedCollection
 
 from _sqlite3 import Row
 #from wheel.signatures.djbec import pt_unxform
@@ -127,6 +130,9 @@ def initialize_database():
         cursor.execute(query)
 
         query = """ DROP TABLE IF EXISTS RECURVE_SPORTSMEN """
+        cursor.execute(query)
+
+        query = """ DROP TABLE IF EXISTS MOUNTED_SPORTSMEN """
         cursor.execute(query)
 
         query = """DROP TABLE IF EXISTS WORLDRECORDS"""
@@ -219,6 +225,18 @@ def initialize_database():
         country_id integer NOT NULL references countries(id)
         )"""
         cursor.execute(query)
+
+        #create mounted_sportsmen table
+        query = """
+        CREATE TABLE MOUNTED_SPORTSMEN (
+        ID SERIAL PRIMARY KEY,
+        NAME CHARACTER VARYING(20) NOT NULL,
+        SURNAME CHARACTER VARYING(30) NOT NULL,
+        BIRTH_YEAR INTEGER ,
+        COUNTRY_ID INTEGER NOT NULL REFERENCES COUNTRIES
+        )"""
+        cursor.execute(query)
+
                 #create recursive_sportsmen table
         query = """
         CREATE TABLE CompoundSportsmen (
@@ -752,6 +770,88 @@ def recurve_page():
     return redirect(url_for('recurve_page'))
 
 ###arif2
+
+@app.route('/mounted_archery', methods=['GET', 'POST'])
+def mounted_page():
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor=connection.cursor()
+        if 'ecb_message' in session:
+            messageToShow=session['ecb_message']
+            session['ecb_message']=""
+        else:
+            messageToShow=""
+    justSearch=False
+    if 'search' in request.form:
+        justSearch=True
+    #display mountedArchers
+    if request.method == 'GET' or justSearch:
+        query="""SELECT * FROM countries"""
+        cursor.execute(query)
+        countries=cursor.fetchall()
+        now = datetime.datetime.now()
+        thisYear=datetime.datetime.today().year
+        query="""SELECT * FROM MOUNTED_SPORTSMEN"""
+        cursor.execute(query)
+        allMountedArchers=MountedCollection()
+        for row in cursor:
+            id, name, surname, birth_year, country_id = row
+            allMountedArchers.addMountedArcher(MountedArcher(id, name, surname, birth_year, country_id))
+        foundMountedArcherCol=MountedCollection()
+        if 'search' in request.form:
+            st="""SELECT * FROM MOUNTED_SPORTSMEN WHERE ("""+request.form['filter_by']+"""=%s)"""
+            searchText=request.form['text']
+            if request.form['filter_by'] == "birth_year":
+                searchText=datetime.datetime.today().year-int(request.form['text'])
+            cursor.execute(st, (searchText,))
+            for row in cursor:
+                id, name, surname, birth_year, country_id = row
+                foundMountedArcherCol.addMountedArcher(MountedArcher(id, name, surname, birth_year, country_id))
+        cursor.close()
+        return render_template('mounted.html', mountedArchers=allMountedArchers.getMountedArchers(), searchMountedArchers=foundMountedArcherCol.getMountedArchers(), allCountries=countries, current_time=now.ctime(), rec_Message=messageToShow, current_year=thisYear)
+
+    #delete from recurve sportsmen
+    elif 'mounted_archers_to_delete' in request.form:
+        keys = request.form.getlist('mounted_archers_to_delete')
+        for key in keys:
+            query="""DELETE FROM MOUNTED_SPORTSMEN WHERE (ID=%s)"""
+            cursor.execute(query, (key,))
+        connection.commit()
+        cursor.close()
+        session['ecb_message']="Successfully deleted!"
+        return redirect(url_for('mounted_page'))
+
+    #insert or update mounted_sportsmen
+    else:
+        new_name=request.form['name']
+        new_surname=request.form['surname']
+        new_age=request.form['age']
+        new_country_id=request.form['country_id']
+        new_birth_year=datetime.datetime.today().year-int(float(new_age))
+        action=request.form['action']
+        try:
+            query="""SELECT * FROM MOUNTED_SPORTSMEN WHERE (NAME=%s) AND (SURNAME=%s)"""
+            cursor.execute(query, (new_name, new_surname))
+            mounted_archer=cursor.fetchone()
+            if mounted_archer is not None:
+                session['ecb_message']="Sorry, this archer already exists."
+            elif 'mounted_archer_to_update' in request.form and action=='Update': #update
+                mountedArcherID=request.form.get('mounted_archer_to_update')
+                query="""UPDATE MOUNTED_SPORTSMEN SET (NAME, SURNAME, BIRTH_YEAR, COUNTRY_ID)=(%s, %s, %s, %s) WHERE (ID=%s)"""
+                cursor.execute(query, (new_name, new_surname, new_birth_year, new_country_id, mountedArcherID))
+                connection.commit()
+                session['ecb_message']="Update successfull!"
+            elif action=='Update':
+                session['ecb_message']="Nothing is selected to update!"
+            else: #insert
+                query="""INSERT INTO MOUNTED_SPORTSMEN (NAME, SURNAME, BIRTH_YEAR, COUNTRY_ID) VALUES(%s, %s, %s, %s)"""
+                cursor.execute(query, (new_name, new_surname, new_birth_year, new_country_id))
+                connection.commit()
+                session['ecb_message']="Insertion successfull!"
+        except dbapi2.DatabaseError:
+            connection.rollback()
+            session['ecb_message']="Registration failed due to a Database Error."
+    return redirect(url_for('mounted_page'))
+
 @app.route('/achery_competition', methods=['GET', 'POST'])
 def competition_page():
     with dbapi2.connect(app.config['dsn']) as connection:
