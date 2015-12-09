@@ -26,7 +26,7 @@
 				<td> {{ club.ClubName }} </td>
 				<td> {{ allCountries[(club.CountryID)-1][2] }} </td>
 				<td> {{ club.ClubYear }} </td>
-
+				<td><input type="checkbox" Name="clubs_to_update" value="{{club.ID}}" /></td>
 			</tr>
 		{% endfor %}
 			<tr>
@@ -44,7 +44,7 @@
 				</select></td>
 
 				<td><input type="number" id="year" min="1900" max="{{current_year}}" ID="age" class="myinput" name="ClubYear" placeholder="year" required/></td>
-
+				<td><input type="submit" class="form-control" value="Update" name="action"></td>
 			</tr>
 			</table>
 	</div>

@@ -786,27 +786,34 @@ def competition_page():
     else:
         new_name=request.form['CompetitionName']
         new_type=request.form['CompType']
-        new_age=request.form['Year']
+        new_year1=request.form['Year']
         new_country_id=request.form['CountryID']
-
+        action = request.form['action']
         session['mar_message']="Insertion successfull!"
         try:
-            statement="""SELECT * FROM Competitions WHERE (CompetitionName=%s) AND (CompType=%s)"""
-            cursor.execute(statement, (new_name, new_type))
+            statement="""SELECT * FROM Competitions WHERE (CompetitionName=%s) AND (CompType=%s) AND (Year=%s) AND (CountryID=%s)"""
+            cursor.execute(statement, (new_name, new_type,new_year1,new_country_id))
             competitioner=cursor.fetchone()
             if competitioner is not None:
+                messageToShow="competitions already exist"
                 cursor.close()
                 connection.close()
                 return redirect(url_for('competition_page'))
+            elif 'competitions_to_update' in request.form and action=='Update':
+                competitionID = request.form.get('competitions_to_update')
+                sorgu = """UPDATE competitions SET (CompetitionName,CompType,Year,CountryID)=(%s, %s, %s) WHERE (id=%s)"""
+                cursor.execute(statement, (new_name, new_type, new_year1, new_country_id, competitionID))
+                connection.commit()
             else: #try to insert
                 statement="""INSERT INTO Competitions (CompetitionName, CompType, Year, CountryID) VALUES(%s, %s, %s, %s)"""
-                cursor.execute(statement, (new_name, new_type, new_age, new_country_id))
+                cursor.execute(statement, (new_name, new_type, new_year1, new_country_id))
                 connection.commit()
         except dbapi2.DatabaseError:
             connection.rollback()
     cursor.close()
     connection.close()
     return redirect(url_for('competition_page'))
+
 
 ###arif2
 
@@ -1144,19 +1151,23 @@ def archeryclubs_page():
     else:
         new_name=request.form['ClubName']
         new_country_id=request.form['countryid']
-        new_age=request.form['ClubYear']
-
+        new_year2=request.form['ClubYear']
         try:
-            statement="""SELECT * FROM ARcheryClubs WHERE (CLUBNAME=%s)"""
-            cursor.execute(statement, (new_name,))
+            statement="""SELECT * FROM ARcheryClubs WHERE (CLUBNAME=%s) AND (countryid=%s) AND (ClubYear=%s)"""
+            cursor.execute(statement, (new_name,new_country_id,new_year2))
             club=cursor.fetchone()
             if club is not None:
+                messageToShow="there exists this information"
                 cursor.close()
                 connection.close()
                 return redirect(url_for('archeryclubs_page'))
+            elif 'clubs_to_update' in request.form and action=='Update':
+                clubID=request.form.get('clubs_to_update')
+                cursor.execute("""UPDATE archeryclubs SET (clubname,countryid,clubyear)=(%s, %s, %s) WHERE (id=%s)""",(new_name,new_country_id,new_year2,clubID))
+                connection.commit()
             else:
                 statement="""INSERT INTO ArcheryClubs (ClubName, CountryID, ClubYear) VALUES(%s, %s, %s)"""
-                cursor.execute(statement, (new_name, new_country_id, new_age))
+                cursor.execute(statement, (new_name, new_country_id, new_year2))
                 connection.commit()
         except dbapi2.DatabaseError:
             connection.rollback()

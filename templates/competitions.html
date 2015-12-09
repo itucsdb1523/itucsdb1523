@@ -31,6 +31,7 @@
 				<td> {{ competitioner.CompType }} </td>
 				<td> {{ competitioner.Year }} </td>
 				<td> {{ allCountries[(competitioner.CountryID)-1][2] }} </td>
+				<td><input type="checkbox" name="competitions_to_update" value="{{competitioner.ID}}" /></td>
 			</tr>
 		{% endfor %}
 			<tr>
@@ -47,6 +48,9 @@
 
 
 				<td><input type="text" id="competitionCountry" name="CountryID" class="myinput" placeholder="CountryID"/></td>
+
+				<td><input type="submit" class="form-control" value="Update" name="action"></td>
+
 			</tr>
 			</table>
 	</div>
