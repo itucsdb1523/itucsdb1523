@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<link href="{{ url_for('static', filename='tablestyle.css') }}" rel="stylesheet">
+
+{%extends "base.html"%}
+
+{%block title%}Informations{% endblock %}
+
+
+{%block content%}
+<body>
+    <h1>Informations</h1>
+	<div class="CSSTableGenerator">
+	<table>
+		<tr>
+			<td></td>
+			<td>Name</td>
+			<td>Olympics</td>
+			<td>Year</td>
+			<td>Informations</td>
+			<td></td>
+		</tr>
+		<form action="{{ url_for('tournament_information_page') }}" method="post">
+        {% for key, information in informations %}
+			<tr>
+				<td><input type="checkbox" Name="informations_to_delete" value="{{information.ID}}" /></td>
+				<td> {{ information.T_Name }} </td>
+				<td> {{ information.T_Olympics }} </td>
+				<td> {{ information.Year }} </td>
+				<td> {{ information.Info }} </td>
+				<td><input type="checkbox" Name="informations_to_update" value="{{information.ID}}" /></td>
+			</tr>
+		{% endfor %}
+			<tr>
+				<td><input type="submit" class="form-control" value="Delete" Name="insert"></td>
+		</form>
+		<form action="{{ url_for('tournament_information_page') }}" method="post">
+				<label for="inputName" class="sr-only">T_Name</label>
+	        	<td><input type="text" ID="inputname" Name="T_Name" class="myinput" placeholder="Tournament Name" required autofocus></td>
+				<td><input type="text" ID="inputname" Name="T_Olympics" class="myinput" placeholder="Olympics Name" required autofocus></td>
+				<td><input type="number" id="year" min="1900" max="2100" ID="age" class="myinput" name="Year" placeholder="year" required/></td>
+				<td><input type="text" ID="inputinfo" Name="Info" class="myinput" placeholder="Information" required autofocus></td>
+				<td><input type="submit" class="form-control" value="Update" name="action"></td>
+			</tr>
+			</table>
+	</div>
+		<input type="submit" class="form-control" value="Add" Name="insert">
+		<div class="error">
+		{{rec_Message}}
+		</div>
+		</form>
+{% endblock %}
+
+
+

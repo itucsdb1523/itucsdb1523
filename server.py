@@ -56,6 +56,9 @@ from compoundteamcol import CompoundTeamCollection
 from mountedSportsmen import MountedArcher
 from MountedCol import MountedCollection
 
+from informations import information_class
+from informationsCol import infoCollection
+
 from _sqlite3 import Row
 #from wheel.signatures.djbec import pt_unxform
 
@@ -157,6 +160,9 @@ def initialize_database():
         cursor.execute(query)
 
         query = """ DROP TABLE IF EXISTS COMPOUNDTEAM"""
+        cursor.execute(query)
+
+        query = """ DROP TABLE IF EXISTS informations"""
         cursor.execute(query)
 
         #create countries table
@@ -293,6 +299,15 @@ def initialize_database():
             CLUBNAME CHARACTER VARYING(200),
             COUNTRYID INTEGER NOT NULL references countries(id),
             CLUBYEAR INTEGER
+        )"""
+        cursor.execute(query)
+
+        query="""CREATE TABLE informations(
+            ID SERIAL PRIMARY KEY,
+            T_Name CHARACTER VARYING(200),
+            T_Olympics CHARACTER VARYING(200),
+            YEAR INTEGER,
+            Info CHARACTER VARYING(900)
         )"""
         cursor.execute(query)
 
@@ -862,8 +877,6 @@ def competition_page():
         statement="""SELECT * FROM countries"""
         cursor.execute(statement)
         countries=cursor.fetchall()
-        now = datetime.datetime.now()
-        thisYear=datetime.datetime.today().year
         statement="""SELECT * FROM Competitions"""
         cursor.execute(statement)
         allCompetitioners=CompetitionCollection()
@@ -871,7 +884,7 @@ def competition_page():
             ID, CompetitionName, CompType, Year, CountryID = row
             allCompetitioners.add_competitioner(Competitioner(ID, CompetitionName, CompType, Year, CountryID ))
         cursor.close()
-        return render_template('competitions.html', competitioners = allCompetitioners.get_competitioners(),allCountries=countries, current_time=now.ctime(), rec_Message=messageToShow)
+        return render_template('competitions.html', competitioners = allCompetitioners.get_competitioners(),allCountries=countries, rec_Message=messageToShow)
 
 
     elif 'competitions_to_delete' in request.form:
@@ -1224,8 +1237,6 @@ def archeryclubs_page():
         statement="""SELECT * FROM countries"""
         cursor.execute(statement)
         countries=cursor.fetchall()
-        now = datetime.datetime.now()
-        thisYear=datetime.datetime.today().year
         statement="""SELECT * FROM ArcheryClubs"""
         cursor.execute(statement)
         allClubs=ClubCollection()
@@ -1233,7 +1244,7 @@ def archeryclubs_page():
              ID, ClubName, CountryID, ClubYear = row
              allClubs.add_club(archery_clubs(ID, ClubName, CountryID, ClubYear))
         cursor.close()
-        return render_template('arc_clubs.html', clubs=allClubs.get_clubs(), allCountries=countries, current_time=now.ctime(), rec_Message=messageToShow, current_year=thisYear)
+        return render_template('arc_clubs.html', clubs=allClubs.get_clubs(), allCountries=countries, rec_Message=messageToShow)
 
     elif 'clubs_to_delete' in request.form:
         keys = request.form.getlist('clubs_to_delete')
@@ -1272,6 +1283,62 @@ def archeryclubs_page():
     cursor.close()
     connection.close()
     return redirect(url_for('archeryclubs_page'))
+
+@app.route('/Tournament_Information', methods=['GET', 'POST'])
+def tournament_information_page():
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor=connection.cursor()
+        messageToShow=""
+    if request.method == 'GET':
+        statement="""SELECT * FROM informations"""
+        cursor.execute(statement)
+        allInfos=infoCollection()
+        for row in cursor:
+             ID, T_Name, T_Olympics, Year, Info = row
+             allInfos.add_information(information_class(ID, T_Name, T_Olympics, Year, Info))
+        cursor.close()
+        return render_template('informations.html', informations=allInfos.get_informations(), rec_Message=messageToShow)
+
+    elif 'informations_to_delete' in request.form:
+        keys = request.form.getlist('informations_to_delete')
+        for key in keys:
+            statement="""DELETE FROM informations WHERE (ID=%s)"""
+            cursor.execute(statement, (key,))
+        connection.commit()
+        cursor.close()
+
+        return redirect(url_for('tournament_information_page'))
+
+    else:
+        new_name=request.form['T_Name']
+        new_T_Olympics=request.form['T_Olympics']
+        new_year3=request.form['Year']
+        new_info=request.form['Info']
+
+        try:
+            statement="""SELECT * FROM informations WHERE (T_NAME=%s) AND (T_Olympics=%s) AND (Year=%s) AND (Info=%s)"""
+            cursor.execute(statement, (new_name,new_T_Olympics,new_year3,new_info))
+            information=cursor.fetchone()
+            if information is not None:
+                messageToShow="there exists this information"
+                cursor.close()
+                connection.close()
+                return redirect(url_for('tournament_information_page'))
+            elif 'informations_to_update' in request.form and action=='Update':
+                infoID=request.form.get('information_to_update')
+                cursor.execute("""UPDATE informations SET (T_name,T_Olympics, Year, Info)=(%s, %s, %s, %s) WHERE (id=%s)""",(new_name,new_T_Olympics,new_year3,new_info,infoID))
+                connection.commit()
+            else:
+                statement="""INSERT INTO informations (T_name,T_Olympics, Year, Info) VALUES(%s, %s, %s, %s)"""
+                cursor.execute(statement, (new_name,new_T_Olympics,new_year3,new_info))
+                connection.commit()
+        except dbapi2.DatabaseError:
+            connection.rollback()
+
+    cursor.close()
+    connection.close()
+    return redirect(url_for('tournament_information_page'))
+
 
 @app.route('/worldrecords',methods=['GET', 'POST'])
 def worldrecords_page():
