@@ -1105,6 +1105,12 @@ def compound_page():
                 cursor.close()
                 connection.close()
                 return redirect(url_for('compound_page'))
+            elif 'compounder_to_update' in request.form:
+                session['message']="Update successfull!"
+                compounderID=request.form.get('compounder_to_update')
+                statement="""UPDATE compoundsportsmen SET (name, lastname, birthyear, countryid)=(%s, %s, %s, %s) WHERE (ID=%s)"""
+                cursor.execute(statement, (new_name, new_surname, new_birth_year, new_country_id, compounderID))
+                connection.commit()
             else: #try to insert
                 statement="""INSERT INTO CompoundSportsmen (Name, Lastname, BirthYear, CountryID) VALUES(%s, %s, %s, %s)"""
                 cursor.execute(statement, (new_name, new_surname, new_birth_year, new_country_id))

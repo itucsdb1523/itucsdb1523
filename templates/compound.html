@@ -22,6 +22,7 @@
 			<td>Last Name</td>
 			<td>Age</td>
 			<td>Country</td>
+			<td></td>
 		</tr>
 		<form action="{{ url_for('compound_page') }}" method="post">
         {% for key, compounder in compounders %}
@@ -31,12 +32,14 @@
 				<td> {{ compounder.LastName }} </td>
 				<td> {{ current_year-compounder.BirthYear }} </td>
 				<td> {{ allCountries[(compounder.CountryID)-1][2] }} </td>
+				<td><input type="radio" name="compounder_to_update" value="{{compounder.ID}}" form="form1"/></td>
 			</tr>
 		{% endfor %}
 			<tr>
 				<td><input type="submit" class="form-control" value="Delete" Name="insert"></td>
 		</form>
-		<form action="{{ url_for('compound_page') }}" method="post">
+		<form id="form1" action="{{ url_for('compound_page') }}" method="post">
+
 				<label for="inputName" class="sr-only">Name</label>
 	        	<td><input type="text" ID="inputUsername" Name="Name" class="myinput" placeholder="Name" required autofocus></td>
 
@@ -51,6 +54,7 @@
 				<option value="{{allCountries[key-1][0]}}">{{allCountries[key-1][2]}}</option>
 				{% endfor %}
 				</select></td>
+				 <td><input type="submit" class="form-control" value="Update" name="update"></td>
 			</tr>
 			</table>
 	</div>
