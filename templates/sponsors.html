@@ -18,8 +18,8 @@
 		<tr>
 			<td></td>
 			<td>SponsorName</td>
+			<td>Year</td>
 			<td>Budget</td>
-			<td>Age</td>
 			<td>Country</td>
 		</tr>
 		<form action="{{ url_for('sponsors_page') }}" method="post">
@@ -28,7 +28,7 @@
 				<td><input type="checkbox" Name="sponsors_to_delete" value="{{sponsor.ID}}" /></td>
 				<td> {{ sponsor.SponsorName }} </td>
 				<td> {{ sponsor.budget }} </td>
-				<td> {{ current_year-sponsor.year }} </td>
+				<td> {{ sponsor.year }} </td>
 				<td> {{ allCountries[(sponsor.CountryID)-1][2] }} </td>
 			</tr>
 		{% endfor %}
@@ -39,10 +39,12 @@
 				<label for="inputName" class="sr-only">Name</label>
 	        	<td><input type="text" ID="inputUsername" Name="SponsorName" class="myinput" placeholder="SponsorName" required autofocus></td>
 
-				<label for="inputSurname" class="sr-only">budget</label>
-				<td><input type="number" ID="inputSurname" class="myinput" Name="budget" placeholder="budget" required/></td>
+				<td><input type="number" min="1900" ID="age" class="myinput" name="year" placeholder="Year" required/></td>
 
-				<td><input type="number" min="18" max="100" ID="age" class="myinput" name="age" placeholder="Age" required/></td>
+				<label for="inputSurname" class="sr-only">budget</label>
+				<td><input type="number" ID="inputSurname" class="myinput" Name="budget" placeholder="Budget" required/></td>
+
+
 
 				<td><select class="form-control" Name="country_id" required>
 				<option></option>

@@ -49,6 +49,10 @@ from wrecordsCol import wrecordsCol
 from medal import Medal
 from medalCol import medalCol
 
+from compoundteam import CompoundTeam
+from compoundteamcol import CompoundTeamCollection
+
+
 from _sqlite3 import Row
 #from wheel.signatures.djbec import pt_unxform
 
@@ -144,6 +148,9 @@ def initialize_database():
         cursor.execute(query)
 
         query = """ DROP TABLE IF EXISTS TOURNAMENT"""
+        cursor.execute(query)
+
+        query = """ DROP TABLE IF EXISTS COMPOUNDTEAM"""
         cursor.execute(query)
 
         #create countries table
@@ -268,6 +275,13 @@ def initialize_database():
             CLUBNAME CHARACTER VARYING(200),
             COUNTRYID INTEGER NOT NULL references countries(id),
             CLUBYEAR INTEGER
+        )"""
+        cursor.execute(query)
+
+        query = """CREATE TABLE COMPOUNDTEAM (
+            ID SERIAL PRIMARY KEY,
+            TeamName character varying(20) NOT NULL,
+            country_id integer NOT NULL references countries(id)
         )"""
         cursor.execute(query)
 
@@ -982,6 +996,62 @@ def compound_page():
     connection.close()
     return redirect(url_for('compound_page'))
 
+@app.route('/compound_teams', methods=['GET', 'POST'])
+def compoundteam_page():
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor=connection.cursor()
+        messageToShow=""
+    #display compounders
+    if request.method == 'GET':
+        statement="""SELECT * FROM countries"""
+        cursor.execute(statement)
+        countries=cursor.fetchall()
+        statement="""SELECT * FROM CompoundTeam"""
+        cursor.execute(statement)
+        allCompoundTeams=CompoundTeamCollection()
+        for row in cursor:
+            ID, TeamName,CountryID = row
+            allCompoundTeams.add_compoundteam(CompoundTeam(ID, Name, CountryID))
+        cursor.close()
+        return render_template('compoundteam.html', compoundteams=allCompoundTeams.get_compoundteams(), allCountries=countries, rec_Message=messageToShow,)
+
+    #delete from recurve sportsmen
+    elif 'compoundteams_to_delete' in request.form:
+        keys = request.form.getlist('compoundteams_to_delete')
+        for key in keys:
+            statement="""DELETE FROM CompoundTeam WHERE (ID=%s)"""
+            cursor.execute(statement, (key,))
+        connection.commit()
+        cursor.close()
+        session['message']="Successfully deleted!"
+        return redirect(url_for('compoundteam_page'))
+
+
+    #insert to recurve sportsmen
+    else:
+        new_name=request.form['TeamName']
+        new_country_id=request.form['country_id']
+        session['message']="Insertion successfull!"
+        try:
+            statement="""SELECT * FROM Compoundteam WHERE (TEAMNAME=%s)"""
+            cursor.execute(statement, (new_name,))
+            CompoundTeam=cursor.fetchone()
+            if CompoundTeam is not None:
+                session['message']="Sorry, this compound team already exists."
+                cursor.close()
+                connection.close()
+                return redirect(url_for('compoundteam_page'))
+            else: #try to insert
+                statement="""INSERT INTO Compoundteam (TeamName, CountryID) VALUES(%s, %s)"""
+                cursor.execute(statement, (new_name,new_country_id))
+                connection.commit()
+        except dbapi2.DatabaseError:
+            connection.rollback()
+            session['message']="Registration failed due to a Database Error."
+    cursor.close()
+    connection.close()
+    return redirect(url_for('compoundteam_page'))
+
 @app.route('/Sponsors', methods=['GET', 'POST'])
 def sponsors_page():
     with dbapi2.connect(app.config['dsn']) as connection:
@@ -1002,7 +1072,6 @@ def sponsors_page():
         cursor.close()
         return render_template('sponsors.html',sponsors=allSponsors.get_sponsors(), allCountries=countries, current_year=thisYear, current_time=now.ctime(), rec_Message=messageToShow,)
 
-    #delete from recurve sportsmen
     elif 'sponsors_to_delete' in request.form:
         keys = request.form.getlist('sponsors_to_delete')
         for key in keys:
@@ -1014,14 +1083,12 @@ def sponsors_page():
         session['message']="Successfully deleted!"
         return redirect(url_for('sponsors_page'))
 
-
-    #insert to recurve sportsmen
     else:
         new_name=request.form['SponsorName']
         new_budget=request.form['budget']
-        new_age=request.form['age']
+        new_year=request.form['year']
         new_country_id=request.form['country_id']
-        new_year=datetime.datetime.today().year-int(float(new_age))
+
         session['message']="Insertion successfull!"
         try:
             statement="""SELECT * FROM Sponsors WHERE (SponsorNAME=%s)"""
