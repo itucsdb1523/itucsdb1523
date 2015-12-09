@@ -299,7 +299,7 @@ def initialize_database():
         query = """CREATE TABLE COMPOUNDTEAM (
             ID SERIAL PRIMARY KEY,
             TeamName character varying(20) NOT NULL,
-            country_id integer NOT NULL references countries(id)
+            CountryID integer NOT NULL references countries(id)
         )"""
         cursor.execute(query)
 
@@ -1108,7 +1108,6 @@ def compoundteam_page():
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor=connection.cursor()
         messageToShow=""
-    #display compounders
     if request.method == 'GET':
         statement="""SELECT * FROM countries"""
         cursor.execute(statement)
@@ -1118,7 +1117,7 @@ def compoundteam_page():
         allCompoundTeams=CompoundTeamCollection()
         for row in cursor:
             ID, TeamName,CountryID = row
-            allCompoundTeams.add_compoundteam(CompoundTeam(ID, Name, CountryID))
+            allCompoundTeams.add_compoundteam(CompoundTeam(ID, TeamName, CountryID))
         cursor.close()
         return render_template('compoundteam.html', compoundteams=allCompoundTeams.get_compoundteams(), allCountries=countries, rec_Message=messageToShow,)
 
@@ -1133,8 +1132,6 @@ def compoundteam_page():
         session['message']="Successfully deleted!"
         return redirect(url_for('compoundteam_page'))
 
-
-    #insert to recurve sportsmen
     else:
         new_name=request.form['TeamName']
         new_country_id=request.form['country_id']
@@ -1142,8 +1139,8 @@ def compoundteam_page():
         try:
             statement="""SELECT * FROM Compoundteam WHERE (TEAMNAME=%s)"""
             cursor.execute(statement, (new_name,))
-            CompoundTeam=cursor.fetchone()
-            if CompoundTeam is not None:
+            compoundteam=cursor.fetchone()
+            if compoundteam is not None:
                 session['message']="Sorry, this compound team already exists."
                 cursor.close()
                 connection.close()

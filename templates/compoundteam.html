@@ -5,7 +5,7 @@
 
 {%extends "base.html"%}
 
-{%block title%}Compound{% endblock %}
+{%block title%}Compound Teams{% endblock %}
 
 
 {%block content%}
@@ -20,11 +20,11 @@
 			<td>Country</td>
 		</tr>
 		<form action="{{ url_for('compoundteam_page') }}" method="post">
-        {% for key, CompoundTeam in compoundteams %}
+        {% for key, compoundteam in compoundteams %}
 			<tr>
-				<td><input type="checkbox" Name="compoundteams_to_delete" value="{{CompoundTeam.ID}}" /></td>
-				<td> {{ CompoundTeam.TeamName }} </td>
-				<td> {{ allCountries[(CompoundTeam.CountryID)-1][2] }} </td>
+				<td><input type="checkbox" Name="compoundteams_to_delete" value="{{compoundteam.ID}}" /></td>
+				<td> {{ compoundteam.TeamName }} </td>
+				<td> {{ allCountries[(compoundteam.CountryID)-1][2] }} </td>
 			</tr>
 		{% endfor %}
 			<tr>
@@ -32,7 +32,7 @@
 		</form>
 		<form action="{{ url_for('compoundteam_page') }}" method="post">
 				<label for="inputName" class="sr-only">Name</label>
-	        	<td><input type="text" ID="inputUsername" Name="TeamName" class="myinput" placeholder="Name" required autofocus></td>
+	        	<td><input type="text" ID="inputUsername" Name="TeamName" class="myinput" placeholder="TeamName" required autofocus></td>
 				<td><select class="form-control" Name="country_id" required>
 				<option></option>
 				{% for key, name, country_code in allCountries %}
