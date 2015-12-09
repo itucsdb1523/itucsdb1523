@@ -743,7 +743,7 @@ def competition_page():
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor=connection.cursor()
         messageToShow=""
-    #display compounders
+    #display
     if request.method == 'GET':
         statement="""SELECT * FROM countries"""
         cursor.execute(statement)
@@ -763,35 +763,33 @@ def competition_page():
     elif 'competitions_to_delete' in request.form:
         keys = request.form.getlist('competitions_to_delete')
         for key in keys:
-             statement="""DELETE FROM competitions WHERE (ID=%s)"""
-             cursor.execute(statement,(key,))
+            statement="""DELETE FROM competitions WHERE (ID=%s)"""
+            cursor.execute(statement, (key,))
         connection.commit()
         cursor.close()
         return redirect(url_for('competition_page'))
-    #insert to recurve sportsmen
+    #insert to
     else:
         new_name=request.form['CompetitionName']
         new_type=request.form['CompType']
         new_age=request.form['Year']
         new_country_id=request.form['CountryID']
-        new_team_year=datetime.datetime.today().year-int(float(new_age))
+
         session['mar_message']="Insertion successfull!"
         try:
             statement="""SELECT * FROM Competitions WHERE (CompetitionName=%s) AND (CompType=%s)"""
             cursor.execute(statement, (new_name, new_type))
             competitioner=cursor.fetchone()
             if competitioner is not None:
-                session['mar_message']="Sorry, this competition already exists."
                 cursor.close()
                 connection.close()
                 return redirect(url_for('competition_page'))
             else: #try to insert
                 statement="""INSERT INTO Competitions (CompetitionName, CompType, Year, CountryID) VALUES(%s, %s, %s, %s)"""
-                cursor.execute(statement, (new_name, new_type, new_team_year, new_country_id))
+                cursor.execute(statement, (new_name, new_type, new_age, new_country_id))
                 connection.commit()
         except dbapi2.DatabaseError:
             connection.rollback()
-            session['mar_message']="Registration failed due to a Database Error."
     cursor.close()
     connection.close()
     return redirect(url_for('competition_page'))
@@ -989,9 +987,8 @@ def sponsors_page():
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor=connection.cursor()
         messageToShow=""
-    #display compounders
     if request.method == 'GET':
-        statement="""SELECT * FROM Sponsors"""
+        statement="""SELECT * FROM Countries"""
         cursor.execute(statement)
         countries=cursor.fetchall()
         now = datetime.datetime.now()
@@ -1003,7 +1000,7 @@ def sponsors_page():
             ID, SponsorName, year, budget, CountryID = row
             allSponsors.add_sponsor(Sponsor(ID, SponsorName,year, budget, CountryID))
         cursor.close()
-        return render_template('sponsors.html',sponsors=allSponsors.get_sponsors(), allCountries=countries, current_time=now.ctime(), rec_Message=messageToShow, current_year=thisYear)
+        return render_template('sponsors.html',sponsors=allSponsors.get_sponsors(), allCountries=countries, current_year=thisYear, current_time=now.ctime(), rec_Message=messageToShow,)
 
     #delete from recurve sportsmen
     elif 'sponsors_to_delete' in request.form:
@@ -1028,7 +1025,7 @@ def sponsors_page():
         session['message']="Insertion successfull!"
         try:
             statement="""SELECT * FROM Sponsors WHERE (SponsorNAME=%s)"""
-            cursor.execute(statement, (new_name))
+            cursor.execute(statement, (new_name,))
             sponsor=cursor.fetchone()
             if sponsor is not None:
                 session['message']="Sorry, this sponsor already exists."
@@ -1052,7 +1049,6 @@ def archeryclubs_page():
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor=connection.cursor()
         messageToShow=""
-    #display compounders
     if request.method == 'GET':
         statement="""SELECT * FROM countries"""
         cursor.execute(statement)
@@ -1064,11 +1060,10 @@ def archeryclubs_page():
         allClubs=ClubCollection()
         for row in cursor:
              ID, ClubName, CountryID, ClubYear = row
-             allClubs.add_club(club(ID, ClubName, CountryID, ClubYear))
+             allClubs.add_club(archery_clubs(ID, ClubName, CountryID, ClubYear))
         cursor.close()
         return render_template('arc_clubs.html', clubs=allClubs.get_clubs(), allCountries=countries, current_time=now.ctime(), rec_Message=messageToShow, current_year=thisYear)
 
-    #delete from recurve sportsmen
     elif 'clubs_to_delete' in request.form:
         keys = request.form.getlist('clubs_to_delete')
         for key in keys:
@@ -1079,8 +1074,6 @@ def archeryclubs_page():
 
         return redirect(url_for('archeryclubs_page'))
 
-
-    #insert to recurve sportsmen
     else:
         new_name=request.form['ClubName']
         new_country_id=request.form['countryid']
@@ -1094,8 +1087,8 @@ def archeryclubs_page():
                 cursor.close()
                 connection.close()
                 return redirect(url_for('archeryclubs_page'))
-            else: #try to insert
-                statement="""INSERT INTO ArcheryClubs (Name, CountryID, ClubYear) VALUES(%s, %s, %s)"""
+            else:
+                statement="""INSERT INTO ArcheryClubs (ClubName, CountryID, ClubYear) VALUES(%s, %s, %s)"""
                 cursor.execute(statement, (new_name, new_country_id, new_age))
                 connection.commit()
         except dbapi2.DatabaseError:

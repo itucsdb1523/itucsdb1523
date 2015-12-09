@@ -26,7 +26,7 @@
 		<form action="{{ url_for('competition_page') }}" method="post">
         {% for key, competitioner in competitioners %}
 			<tr>
-				<td><input type="checkbox" name="competitions_to_delete" value="{{competitioner.id}}" /></td>
+				<td><input type="checkbox" name="competitions_to_delete" value="{{competitioner.ID}}" /></td>
 				<td> {{ competitioner.CompetitionName }} </td>
 				<td> {{ competitioner.CompType }} </td>
 				<td> {{ competitioner.Year }} </td>
