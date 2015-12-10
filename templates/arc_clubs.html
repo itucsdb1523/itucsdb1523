@@ -26,13 +26,13 @@
 				<td> {{ club.ClubName }} </td>
 				<td> {{ allCountries[(club.CountryID)-1][2] }} </td>
 				<td> {{ club.ClubYear }} </td>
-				<td><input type="checkbox" Name="clubs_to_update" value="{{club.ID}}" /></td>
+				<td><input type="checkbox" Name="clubs_to_update" value="{{club.ID}}" form="form1" /></td>
 			</tr>
 		{% endfor %}
 			<tr>
 				<td><input type="submit" class="form-control" value="Delete" Name="insert"></td>
 		</form>
-		<form action="{{ url_for('archeryclubs_page') }}" method="post">
+		<form id="form1" action="{{ url_for('archeryclubs_page') }}" method="post">
 				<label for="inputName" class="sr-only">ClubName</label>
 	        	<td><input type="text" ID="inputUsername" Name="ClubName" class="myinput" placeholder="ClubName" required autofocus></td>
 

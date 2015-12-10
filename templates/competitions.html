@@ -31,13 +31,13 @@
 				<td> {{ competitioner.CompType }} </td>
 				<td> {{ competitioner.Year }} </td>
 				<td> {{ allCountries[(competitioner.CountryID)-1][2] }} </td>
-				<td><input type="checkbox" name="competitions_to_update" value="{{competitioner.ID}}" /></td>
+				<td><input type="checkbox" name="competitions_to_update" value="{{competitioner.ID}}" form="form1"/></td>
 			</tr>
 		{% endfor %}
 			<tr>
 				<td><input type="submit" class="form-control" value="Delete" name="insert"></td>
 		</form>
-		<form action='{{ url_for("competition_page") }}' method="post">
+		<form id="form1" action='{{ url_for("competition_page") }}' method="post">
 				<label for="competitionName" class="sr-only">Name_comp</label>
 	        	<td><input type="text" id="competitionName" name="CompetitionName" class="myinput" placeholder="CompetitionName"></td>
 
@@ -48,13 +48,11 @@
 
 
 				<td><input type="text" id="competitionCountry" name="CountryID" class="myinput" placeholder="CountryID"/></td>
-
 				<td><input type="submit" class="form-control" value="Update" name="action"></td>
-
 			</tr>
 			</table>
 	</div>
-	<input type="submit" class="form-control" value="Add" name="insert">
+	<input type="submit" class="form-control" value="Add" Name="insert">
 		<div class="error">
 		{{rec_Message}}
 		</div>

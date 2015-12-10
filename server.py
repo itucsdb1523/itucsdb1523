@@ -902,7 +902,6 @@ def competition_page():
         new_year1=request.form['Year']
         new_country_id=request.form['CountryID']
         action = request.form['action']
-        session['mar_message']="Insertion successfull!"
         try:
             statement="""SELECT * FROM Competitions WHERE (CompetitionName=%s) AND (CompType=%s) AND (Year=%s) AND (CountryID=%s)"""
             cursor.execute(statement, (new_name, new_type,new_year1,new_country_id))
@@ -912,9 +911,9 @@ def competition_page():
                 cursor.close()
                 connection.close()
                 return redirect(url_for('competition_page'))
-            elif 'competitions_to_update' in request.form and action=='Update':
+            elif 'competitions_to_update' in request.form:
                 competitionID = request.form.get('competitions_to_update')
-                sorgu = """UPDATE competitions SET (CompetitionName,CompType,Year,CountryID)=(%s, %s, %s) WHERE (id=%s)"""
+                sorgu = """UPDATE competitions SET (CompetitionName,CompType,Year,CountryID)=(%s, %s, %s, %s) WHERE (id=%s)"""
                 cursor.execute(statement, (new_name, new_type, new_year1, new_country_id, competitionID))
                 connection.commit()
             else: #try to insert
@@ -1275,7 +1274,7 @@ def archeryclubs_page():
                 cursor.close()
                 connection.close()
                 return redirect(url_for('archeryclubs_page'))
-            elif 'clubs_to_update' in request.form and action=='Update':
+            elif 'clubs_to_update' in request.form:
                 clubID=request.form.get('clubs_to_update')
                 cursor.execute("""UPDATE archeryclubs SET (clubname,countryid,clubyear)=(%s, %s, %s) WHERE (id=%s)""",(new_name,new_country_id,new_year2,clubID))
                 connection.commit()
@@ -1330,7 +1329,7 @@ def tournament_information_page():
                 cursor.close()
                 connection.close()
                 return redirect(url_for('tournament_information_page'))
-            elif 'informations_to_update' in request.form and action=='Update':
+            elif 'informations_to_update' in request.form:
                 infoID=request.form.get('information_to_update')
                 cursor.execute("""UPDATE informations SET (T_name,T_Olympics, Year, Info)=(%s, %s, %s, %s) WHERE (id=%s)""",(new_name,new_T_Olympics,new_year3,new_info,infoID))
                 connection.commit()
