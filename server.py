@@ -1187,6 +1187,12 @@ def compoundteam_page():
                 cursor.close()
                 connection.close()
                 return redirect(url_for('compoundteam_page'))
+            elif 'compoundteam_to_update' in request.form:
+                session['message']="Update successfull!"
+                compoundteamID=request.form.get('compoundteam_to_update')
+                statement="""UPDATE compoundteam SET (teamname, countryid)=(%s, %s) WHERE (ID=%s)"""
+                cursor.execute(statement, (new_name, new_country_id, compoundteamID))
+                connection.commit()
             else: #try to insert
                 statement="""INSERT INTO Compoundteam (TeamName, CountryID) VALUES(%s, %s)"""
                 cursor.execute(statement, (new_name,new_country_id))
@@ -1245,6 +1251,12 @@ def sponsors_page():
                 cursor.close()
                 connection.close()
                 return redirect(url_for('sponsors_page'))
+            elif 'sponsor_to_update' in request.form:
+                session['message']="Update successfull!"
+                sponsorID=request.form.get('sponsor_to_update')
+                statement="""UPDATE sponsors SET (sponsorname, year, budget, countryid)=(%s, %s, %s, %s) WHERE (ID=%s)"""
+                cursor.execute(statement, (new_name, new_year,new_budget, new_country_id, sponsorID))
+                connection.commit()
             else: #try to insert
                 statement="""INSERT INTO Sponsors (SponsorName, budget, year, CountryID) VALUES(%s, %s, %s, %s)"""
                 cursor.execute(statement, (new_name, new_budget, new_year, new_country_id))

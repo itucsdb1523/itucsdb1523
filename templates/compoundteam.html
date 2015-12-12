@@ -18,6 +18,7 @@
 			<td></td>
 			<td>TeamName</td>
 			<td>Country</td>
+			<td></td>
 		</tr>
 		<form action="{{ url_for('compoundteam_page') }}" method="post">
         {% for key, compoundteam in compoundteams %}
@@ -25,12 +26,13 @@
 				<td><input type="checkbox" Name="compoundteams_to_delete" value="{{compoundteam.ID}}" /></td>
 				<td> {{ compoundteam.TeamName }} </td>
 				<td> {{ allCountries[(compoundteam.CountryID)-1][2] }} </td>
+				<td><input type="radio" name="compoundteam_to_update" value="{{compoundteam.ID}}" form="form1"/></td>
 			</tr>
 		{% endfor %}
 			<tr>
 				<td><input type="submit" class="form-control" value="Delete" Name="insert"></td>
 		</form>
-		<form action="{{ url_for('compoundteam_page') }}" method="post">
+		<form id="form1" action="{{ url_for('compoundteam_page') }}" method="post">
 				<label for="inputName" class="sr-only">Name</label>
 	        	<td><input type="text" ID="inputUsername" Name="TeamName" class="myinput" placeholder="TeamName" required autofocus></td>
 				<td><select class="form-control" Name="country_id" required>
@@ -39,6 +41,7 @@
 				<option value="{{allCountries[key-1][0]}}">{{allCountries[key-1][2]}}</option>
 				{% endfor %}
 				</select></td>
+				<td><input type="submit" class="form-control" value="Update" name="update"></td>
 			</tr>
 			</table>
 	</div>
@@ -48,6 +51,3 @@
 		</div>
 		</form>
 {% endblock %}
-
-
-

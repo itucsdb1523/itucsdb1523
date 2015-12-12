@@ -20,6 +20,7 @@
 			<td>Year</td>
 			<td>Budget</td>
 			<td>Country</td>
+			<td></td>
 		</tr>
 		<form action="{{ url_for('sponsors_page') }}" method="post">
         {% for key, sponsor in sponsors %}
@@ -29,12 +30,13 @@
 				<td> {{ sponsor.budget }} </td>
 				<td> {{ sponsor.year }} </td>
 				<td> {{ allCountries[(sponsor.CountryID)-1][2] }} </td>
+				<td><input type="radio" name="sponsor_to_update" value="{{sponsor.ID}}" form="form1"/></td>
 			</tr>
 		{% endfor %}
 			<tr>
 				<td><input type="submit" class="form-control" value="Delete" Name="insert"></td>
 		</form>
-		<form action="{{ url_for('sponsors_page') }}" method="post">
+		<form id="form1" action="{{ url_for('sponsors_page') }}" method="post">
 				<label for="inputName" class="sr-only">Name</label>
 	        	<td><input type="text" ID="inputUsername" Name="SponsorName" class="myinput" placeholder="SponsorName" required autofocus></td>
 
@@ -43,14 +45,13 @@
 				<label for="inputSurname" class="sr-only">budget</label>
 				<td><input type="number" ID="inputSurname" class="myinput" Name="budget" placeholder="Budget" required/></td>
 
-
-
 				<td><select class="form-control" Name="country_id" required>
 				<option></option>
 				{% for key, name, country_code in allCountries %}
 				<option value="{{allCountries[key-1][0]}}">{{allCountries[key-1][2]}}</option>
 				{% endfor %}
 				</select></td>
+				<td><input type="submit" class="form-control" value="Update" name="update"></td>
 			</tr>
 			</table>
 	</div>
@@ -60,6 +61,3 @@
 		</div>
 		</form>
 {% endblock %}
-
-
-
