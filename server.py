@@ -996,18 +996,34 @@ def tournament_page():
 def games_page():
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor=connection.cursor()
+        if 'ecb_message' in session:
+            messageToShow=session['ecb_message']
+            session['ecb_message']=""
+        else:
+            messageToShow=""
     now = datetime.datetime.now()
-    Message=""
+    #Message=""
+    justSearch=False
+    if 'search' in request.form:
+        justSearch=True
     #display games
-    if request.method == 'GET':
+    if request.method == 'GET' or justSearch:
         query="""SELECT * FROM games"""
         cursor.execute(query)
         allGames=gameCol()
         for row in cursor:
             id, name, developer, publisher, year = row
             allGames.add_game(Game(id, name, developer, publisher, year))
+        foundGameCol=gameCol()
+        if 'search' in request.form:
+            statem="""SELECT * FROM games WHERE ("""+request.form['filter_by']+"""=%s)"""
+            searchText=request.form['text']
+            cursor.execute(statem, (searchText,))
+            for row in cursor:
+                id, name, developer, publisher, year = row
+                foundGameCol.add_game(Game(id, name, developer, publisher, year))
         cursor.close()
-        return render_template('games.html', games=allGames.get_games(), current_time=now.ctime(), rec_Message=Message)
+        return render_template('games.html', games=allGames.get_games(), searchGames=foundGameCol.get_games(), current_time=now.ctime(), rec_Message=messageToShow)
 
     #delete from games
     elif 'games_to_delete' in request.form:
@@ -1017,37 +1033,46 @@ def games_page():
             cursor.execute(statement, (key,))
         connection.commit()
         cursor.close()
+        session['ecb_message']="Successfully deleted!"
         return redirect(url_for('games_page'))
 
-    #insert to games
+    #insert to games or update game
     else:
         new_name=request.form['name']
         new_developer=request.form['developer']
         new_publisher=request.form['publisher']
         new_year=request.form['year']
-        #new_year=int(new_year)
-        Message="Insertion successfull!"
+        session['ecb_message']="Insertion successfull!"
         try:
             if int(new_year)>datetime.datetime.today().year:
-                Message="Sorry, this game has not been released yet."
+                session['ecb_message']="Sorry, this game has not been released yet."
                 cursor.close()
                 connection.close()
                 return redirect(url_for('games_page'))
-            statement="""SELECT * FROM games WHERE NAME=%s"""
-            cursor.execute(statement, (new_name,))
-            game=cursor.fetchone()
-            if game is not None:
-                Message="Sorry, this game already exists."
-                cursor.close()
-                connection.close()
-                return redirect(url_for('games_page'))
-            else: #try to insert
-                statement="""INSERT INTO games (name, developer, publisher, year) VALUES(%s, %s, %s, %s)"""
-                cursor.execute(statement, (new_name, new_developer, new_publisher, new_year))
-                connection.commit()
+            else:
+                statement="""SELECT * FROM games WHERE NAME=%s"""
+                cursor.execute(statement, (new_name,))
+                game=cursor.fetchone()
+                if game is not None:
+                    session['ecb_message']="Sorry, this game already exists."
+                    cursor.close()
+                    connection.close()
+                    return redirect(url_for('games_page'))
+                #update
+                elif 'game_to_update' in request.form:
+                    session['ecb_message']="Update successfull!"
+                    gameID=request.form.get('game_to_update')
+                    statement="""UPDATE games SET (name, developer, publisher, year)=(%s, %s, %s, %s) WHERE (ID=%s)"""
+                    cursor.execute(statement, (new_name, new_developer, new_publisher, new_year, gameID))
+                    connection.commit()
+                #try to insert
+                else:
+                    statement="""INSERT INTO games (name, developer, publisher, year) VALUES(%s, %s, %s, %s)"""
+                    cursor.execute(statement, (new_name, new_developer, new_publisher, new_year))
+                    connection.commit()
         except dbapi2.DatabaseError:
             connection.rollback()
-            Message="Registration failed due to a Database Error."
+            session['ecb_message']="Registration failed due to a Database Error."
     cursor.close()
     connection.close()
     return redirect(url_for('games_page'))
