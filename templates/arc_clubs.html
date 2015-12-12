@@ -18,6 +18,7 @@
 			<td>Name</td>
 			<td>Country</td>
 			<td>Club Year</td>
+			<td></td>
 		</tr>
 		<form action="{{ url_for('archeryclubs_page') }}" method="post">
         {% for key, club in clubs %}
@@ -26,7 +27,7 @@
 				<td> {{ club.ClubName }} </td>
 				<td> {{ allCountries[(club.CountryID)-1][2] }} </td>
 				<td> {{ club.ClubYear }} </td>
-				<td><input type="checkbox" Name="clubs_to_update" value="{{club.ID}}" form="form1" /></td>
+				<td><input type="radio" Name="clubs_to_update" value="{{club.ID}}" form="form1" /></td>
 			</tr>
 		{% endfor %}
 			<tr>

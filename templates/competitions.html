@@ -22,6 +22,7 @@
 			<td>Type_comp</td>
 			<td>Year_comp</td>
 			<td>Country_comp</td>
+			<td></td>
 		</tr>
 		<form action="{{ url_for('competition_page') }}" method="post">
         {% for key, competitioner in competitioners %}
@@ -31,7 +32,7 @@
 				<td> {{ competitioner.CompType }} </td>
 				<td> {{ competitioner.Year }} </td>
 				<td> {{ allCountries[(competitioner.CountryID)-1][2] }} </td>
-				<td><input type="checkbox" name="competitions_to_update" value="{{competitioner.ID}}" form="form1"/></td>
+				<td><input type="radio" name="competitions_to_update" value="{{competitioner.ID}}" form="form1"/></td>
 			</tr>
 		{% endfor %}
 			<tr>
@@ -46,9 +47,14 @@
 
 				<td><input type="number" min="1900" max="2100" id="competitionYear" class="myinput" name="Year" placeholder="Year"/></td>
 
+				<td><select class="form-control" Name="CountryID" required>
+				<option></option>
+				{% for key, name, country_code in allCountries %}
+				<option value="{{allCountries[key-1][0]}}">{{allCountries[key-1][2]}}</option>
+				{% endfor %}
+				</select></td>
 
-				<td><input type="text" id="competitionCountry" name="CountryID" class="myinput" placeholder="CountryID"/></td>
-				<td><input type="submit" class="form-control" value="Update" name="action"></td>
+				<td><input type="submit" class="form-control" value="Update" name="update"></td>
 			</tr>
 			</table>
 	</div>

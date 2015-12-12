@@ -897,14 +897,13 @@ def competition_page():
         return redirect(url_for('competition_page'))
     #insert to
     else:
-        new_name=request.form['CompetitionName']
+        new_compname=request.form['CompetitionName']
         new_type=request.form['CompType']
         new_year1=request.form['Year']
         new_country_id=request.form['CountryID']
-        action = request.form['action']
         try:
             statement="""SELECT * FROM Competitions WHERE (CompetitionName=%s) AND (CompType=%s) AND (Year=%s) AND (CountryID=%s)"""
-            cursor.execute(statement, (new_name, new_type,new_year1,new_country_id))
+            cursor.execute(statement, (new_compname, new_type,new_year1,new_country_id))
             competitioner=cursor.fetchone()
             if competitioner is not None:
                 messageToShow="competitions already exist"
@@ -913,12 +912,12 @@ def competition_page():
                 return redirect(url_for('competition_page'))
             elif 'competitions_to_update' in request.form:
                 competitionID = request.form.get('competitions_to_update')
-                sorgu = """UPDATE competitions SET (CompetitionName,CompType,Year,CountryID)=(%s, %s, %s, %s) WHERE (id=%s)"""
-                cursor.execute(statement, (new_name, new_type, new_year1, new_country_id, competitionID))
+                statement = """UPDATE competitions SET (CompetitionName, CompType, Year, CountryID)=(%s, %s, %s, %s) WHERE (id=%s)"""
+                cursor.execute(statement, (new_compname, new_type, new_year1, new_country_id, competitionID))
                 connection.commit()
             else: #try to insert
                 statement="""INSERT INTO Competitions (CompetitionName, CompType, Year, CountryID) VALUES(%s, %s, %s, %s)"""
-                cursor.execute(statement, (new_name, new_type, new_year1, new_country_id))
+                cursor.execute(statement, (new_compname, new_type, new_year1, new_country_id))
                 connection.commit()
         except dbapi2.DatabaseError:
             connection.rollback()
@@ -1366,8 +1365,9 @@ def tournament_information_page():
                 connection.close()
                 return redirect(url_for('tournament_information_page'))
             elif 'informations_to_update' in request.form:
-                infoID=request.form.get('information_to_update')
-                cursor.execute("""UPDATE informations SET (T_name,T_Olympics, Year, Info)=(%s, %s, %s, %s) WHERE (id=%s)""",(new_name,new_T_Olympics,new_year3,new_info,infoID))
+                infoID=request.form.get('informations_to_update')
+                statement="""UPDATE informations SET (T_name,T_Olympics, Year, info)=(%s, %s, %s, %s) WHERE (id=%s)"""
+                cursor.execute(statement,(new_name, new_T_Olympics, new_year3 ,new_info, infoID))
                 connection.commit()
             else:
                 statement="""INSERT INTO informations (T_name,T_Olympics, Year, Info) VALUES(%s, %s, %s, %s)"""
