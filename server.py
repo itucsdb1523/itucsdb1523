@@ -1461,10 +1461,17 @@ def worldrecords_page():
 def medals_page():
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor=connection.cursor()
+        if 'ecb_message' in session:
+            messageToShow=session['ecb_message']
+            session['ecb_message']=""
+        else:
+            messageToShow=""
     now = datetime.datetime.now()
-    Message=""
+    justSearch=False
+    if 'search' in request.form:
+        justSearch=True
     #display medals
-    if request.method == 'GET':
+    if request.method == 'GET' or justSearch:
         q1="""SELECT * FROM countries"""
         cursor.execute(q1)
         countries=cursor.fetchall()
@@ -1480,8 +1487,16 @@ def medals_page():
         for row in cursor:
             id, name, gameType_id, country_id, medalType_id, year = row
             allMedals.add_medal(Medal(id, name, gameType_id, country_id, medalType_id, year))
+        foundMedalsCol=medalCol()
+        if 'search' in request.form:
+            statem="""SELECT * FROM medals WHERE ("""+request.form['filter_by']+"""=%s)"""
+            searchText=request.form['text']
+            cursor.execute(statem, (searchText,))
+            for row in cursor:
+                id, name, gameType_id, country_id, medalType_id, year = row
+                foundMedalsCol.add_medal(Medal(id, name, gameType_id, country_id, medalType_id, year))
         cursor.close()
-        return render_template('medals.html', medals=allMedals.get_medals(), allCountries=countries, allMedalTypes=medaltypes, allGameTypes=gametypes, current_time=now.ctime(), rec_Message=Message)
+        return render_template('medals.html', medals=allMedals.get_medals(), searchMedals=foundMedalsCol.get_medals(), allCountries=countries, allMedalTypes=medaltypes, allGameTypes=gametypes, current_time=now.ctime(), rec_Message=messageToShow)
 
     #delete from medals
     elif 'medals_to_delete' in request.form:
@@ -1491,26 +1506,35 @@ def medals_page():
             cursor.execute(statement, (key,))
         connection.commit()
         cursor.close()
+        session['ecb_message']="Successfully deleted!"
         return redirect(url_for('medals_page'))
 
-    #insert into worldrecords
+    #insert medal or update medal
     else:
         new_name=request.form['name']
         new_gameType_id=request.form['gameType_id']
         new_country_id=request.form['country_id']
         new_medalType_id=request.form['medalType_id']
         new_year=request.form['year']
-        Message="Insertion successfull!"
+        session['ecb_message']="Insertion successfull!"
         try:
             if int(new_year)>datetime.datetime.today().year:
-                Message="Sorry, the year you've entered is in the future. Did you come back from the future?"
+                session['ecb_message']="Sorry, the year you've entered is in the future. Did you come back from the future?"
                 cursor.close()
                 connection.close()
                 return redirect(url_for('medals_page'))
+            #update
+            elif 'medal_to_update' in request.form:
+                    session['ecb_message']="Update successfull!"
+                    medalID=request.form.get('medal_to_update')
+                    statement="""UPDATE medals SET (name, gameType_id, country_id, medalType_id, year)=(%s, %s, %s, %s, %s) WHERE (ID=%s)"""
+                    cursor.execute(statement, (new_name, new_gameType_id, new_country_id, new_medalType_id, new_year, medalID))
+                    connection.commit()
             #try to insert
-            statement="""INSERT INTO medals (name, gameType_id, country_id, medalType_id, year) VALUES(%s, %s, %s, %s, %s)"""
-            cursor.execute(statement, (new_name, new_gameType_id, new_country_id, new_medalType_id, new_year))
-            connection.commit()
+            else:
+                statement="""INSERT INTO medals (name, gameType_id, country_id, medalType_id, year) VALUES(%s, %s, %s, %s, %s)"""
+                cursor.execute(statement, (new_name, new_gameType_id, new_country_id, new_medalType_id, new_year))
+                connection.commit()
         except dbapi2.DatabaseError:
             connection.rollback()
             Message="Registration failed due to a Database Error."

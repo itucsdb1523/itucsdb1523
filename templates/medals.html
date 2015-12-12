@@ -11,6 +11,7 @@
 <body>
 
 <h1>--> Olympic Medals in Archery <--</h1>
+<br>
 <h4>This is the table of olympic medals in archery.</h4>
 <h4>You can add a medal with related details here.</h4>
   <div class="CSSTableGenerator">
@@ -22,6 +23,7 @@
 			<td>Game Type</td>
 			<td>Medal Type</td>
 			<td>Year</td>
+			<td></td>
 		</tr>
 		<form action="{{ url_for('medals_page') }}" method="post">
         {% for key, medal in medals %}
@@ -32,14 +34,15 @@
 				<td> {{ allGameTypes[(medal.gameType_id)-1][2] }} </td>
 				<td> {{ allMedalTypes[(medal.medalType_id)-1][2] }} </td>
 				<td> {{ medal.year }} </td>
+				<td><input type="radio" name="medal_to_update" value="{{medal.id}}" form="form1"/></td>
 			</tr>
 		{% endfor %}
 			<tr>
-				<td><input type="submit" class="form-control" value="Delete" name="insert"></td>
+				<td><input type="submit" class="form-control" value="Delete" name="delete"></td>
 		</form>
-		<form action="{{ url_for('medals_page') }}" method="post">
-				<label for="inputDescription" class="sr-only">Name</label>
-	        	<td><input type="text" id="inputDescription" name="name" class="myinput" placeholder="Name of the medalist or team"></td>
+		<form id="form1" action="{{ url_for('medals_page') }}" method="post">
+				<label for="inputName" class="sr-only">Name</label>
+	        	<td><input type="text" id="inputName" name="name" class="myinput" placeholder="Name of the medalist or team" required autofocus></td>
 
 				<td><select class="form-control" name="country_id" required>
      		    <option></option>
@@ -61,15 +64,55 @@
      		    <option value="{{allMedalTypes[key-1][0]}}">{{allMedalTypes[key-1][2]}}</option>
       		 	{% endfor %}
        			</select></td>
-
 				<td><input type="text" id="inputYear" name="year" class="myinput" placeholder="Year of the medal"/></td>
+				<td><input type="submit" class="form-control" value="Update" name="update"></td>
 			</tr>
 			</table>
-	</div>
 	<input type="submit" class="form-control" value="Add" name="insert">
+	</div>
+
 		<div class="error">
 		{{rec_Message}}
 		</div>
 		</form>
+
+<br>
+	<h2>Find Olympic Medals</h2>
+	<br>
+
+	<form id="form3" action="{{ url_for('medals_page') }}" method="post">
+		<div class="search">
+		<select class="myinput" name="filter_by">
+		   	<option value="name"> Search by Name of the medalist or team </option>
+	   	</select>
+	   	<label for="text" class="sr-only">Search</label>
+		<input type="text" id="inputUsername" name="text" class="myinput" placeholder="enter the value to search">
+		<br>
+		<input type="submit" class="myinput" value="SEARCH IT PLEASE" name="search">
+		<br>
+		<h4>Here are the results:</h4>
+		</div>
+	</form>
+    <div class="CSSTableGenerator">
+    <table>
+      <tr>
+        <td>Name</td>
+		<td>Nationality</td>
+		<td>Game Type</td>
+		<td>Medal Type</td>
+		<td>Year</td>
+      </tr>
+      {% for key, medal in searchMedals %}
+      <tr>
+        <td> {{ medal.name }} </td>
+		<td> {{ allCountries[(medal.country_id)-1][2] }} </td>
+		<td> {{ allGameTypes[(medal.gameType_id)-1][2] }} </td>
+		<td> {{ allMedalTypes[(medal.medalType_id)-1][2] }} </td>
+		<td> {{ medal.year }} </td>
+      </tr>
+      {% endfor %}
+
+    </table>
+    </div>
 
 {% endblock %}
