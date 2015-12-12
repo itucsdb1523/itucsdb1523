@@ -1002,7 +1002,6 @@ def games_page():
         else:
             messageToShow=""
     now = datetime.datetime.now()
-    #Message=""
     justSearch=False
     if 'search' in request.form:
         justSearch=True
@@ -1049,6 +1048,13 @@ def games_page():
                 cursor.close()
                 connection.close()
                 return redirect(url_for('games_page'))
+            #update
+            elif 'game_to_update' in request.form:
+                session['ecb_message']="Update successfull!"
+                gameID=request.form.get('game_to_update')
+                statement="""UPDATE games SET (name, developer, publisher, year)=(%s, %s, %s, %s) WHERE (ID=%s)"""
+                cursor.execute(statement, (new_name, new_developer, new_publisher, new_year, gameID))
+                connection.commit()
             else:
                 statement="""SELECT * FROM games WHERE NAME=%s"""
                 cursor.execute(statement, (new_name,))
@@ -1058,13 +1064,6 @@ def games_page():
                     cursor.close()
                     connection.close()
                     return redirect(url_for('games_page'))
-                #update
-                elif 'game_to_update' in request.form:
-                    session['ecb_message']="Update successfull!"
-                    gameID=request.form.get('game_to_update')
-                    statement="""UPDATE games SET (name, developer, publisher, year)=(%s, %s, %s, %s) WHERE (ID=%s)"""
-                    cursor.execute(statement, (new_name, new_developer, new_publisher, new_year, gameID))
-                    connection.commit()
                 #try to insert
                 else:
                     statement="""INSERT INTO games (name, developer, publisher, year) VALUES(%s, %s, %s, %s)"""
@@ -1374,10 +1373,17 @@ def tournament_information_page():
 def worldrecords_page():
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor=connection.cursor()
+        if 'ecb_message' in session:
+            messageToShow=session['ecb_message']
+            session['ecb_message']=""
+        else:
+            messageToShow=""
     now = datetime.datetime.now()
-    Message=""
+    justSearch=False
+    if 'search' in request.form:
+        justSearch=True
     #display worldrecords
-    if request.method == 'GET':
+    if request.method == 'GET' or justSearch:
         q1="""SELECT * FROM countries"""
         cursor.execute(q1)
         countries=cursor.fetchall()
@@ -1387,8 +1393,16 @@ def worldrecords_page():
         for row in cursor:
             id, description, score, name, country_id, year = row
             allWorldRecords.add_worldrecord(WorldRecord(id, description, score, name, country_id, year))
+        foundWrecordsCol=wrecordsCol()
+        if 'search' in request.form:
+            statem="""SELECT * FROM worldrecords WHERE ("""+request.form['filter_by']+"""=%s)"""
+            searchText=request.form['text']
+            cursor.execute(statem, (searchText,))
+            for row in cursor:
+                id, description, score, name, country_id, year = row
+                foundWrecordsCol.add_worldrecord(WorldRecord(id, description, score, name, country_id, year))
         cursor.close()
-        return render_template('worldrecords.html', worldrecords=allWorldRecords.get_worldrecords(), allCountries=countries, current_time=now.ctime(), rec_Message=Message)
+        return render_template('worldrecords.html', worldrecords=allWorldRecords.get_worldrecords(), searchWorldrecords=foundWrecordsCol.get_worldrecords(), allCountries=countries, current_time=now.ctime(), rec_Message=messageToShow)
 
     #delete from worldrecords
     elif 'worldrecords_to_delete' in request.form:
@@ -1398,6 +1412,7 @@ def worldrecords_page():
             cursor.execute(statement, (key,))
         connection.commit()
         cursor.close()
+        session['ecb_message']="Successfully deleted!"
         return redirect(url_for('worldrecords_page'))
 
     #insert into worldrecords
@@ -1407,28 +1422,37 @@ def worldrecords_page():
         new_name=request.form['name']
         new_country_id=request.form['country_id']
         new_year=request.form['year']
-        Message="Insertion successfull!"
+        session['ecb_message']="Insertion successfull!"
         try:
             if int(new_year)>datetime.datetime.today().year:
-                Message="Sorry, the year you've entered is in the future. Did you come back from the future?"
+                session['ecb_message']="Sorry, the year you've entered is in the future. Did you come back from the future?"
                 cursor.close()
                 connection.close()
                 return redirect(url_for('worldrecords_page'))
-            statement="""SELECT * FROM worldrecords WHERE NAME=%s"""
-            cursor.execute(statement, (new_name,))
-            worldrecord=cursor.fetchone()
-            if worldrecord is not None:
-                Message="Sorry, this record already exists in the table."
-                cursor.close()
-                connection.close()
-                return redirect(url_for('worldrecords_page'))
-            else: #try to insert
-                statement="""INSERT INTO worldrecords (description, score, name, country_id, year) VALUES(%s, %s, %s, %s, %s)"""
-                cursor.execute(statement, (new_description, new_score, new_name, new_country_id, new_year))
-                connection.commit()
+            #update
+            elif 'wrecord_to_update' in request.form:
+                    session['ecb_message']="Update successfull!"
+                    wrecordID=request.form.get('wrecord_to_update')
+                    statement="""UPDATE worldrecords SET (description, score, name, country_id, year)=(%s, %s, %s, %s, %s) WHERE (ID=%s)"""
+                    cursor.execute(statement, (new_description, new_score, new_name, new_country_id, new_year, wrecordID))
+                    connection.commit()
+            else:
+                statement="""SELECT * FROM worldrecords WHERE description=%s"""
+                cursor.execute(statement, (new_description,))
+                worldrecord=cursor.fetchone()
+                if worldrecord is not None:
+                    session['ecb_message']="Sorry, this record (description) already exists in the table."
+                    cursor.close()
+                    connection.close()
+                    return redirect(url_for('worldrecords_page'))
+                #try to insert
+                else:
+                    statement="""INSERT INTO worldrecords (description, score, name, country_id, year) VALUES(%s, %s, %s, %s, %s)"""
+                    cursor.execute(statement, (new_description, new_score, new_name, new_country_id, new_year))
+                    connection.commit()
         except dbapi2.DatabaseError:
             connection.rollback()
-            Message="Registration failed due to a Database Error."
+            session['ecb_message']="Registration failed due to a Database Error."
     cursor.close()
     connection.close()
     return redirect(url_for('worldrecords_page'))

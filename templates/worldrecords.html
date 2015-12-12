@@ -11,8 +11,10 @@
 <body>
 
 <h1>--> Archery: The World Records <--</h1>
+<br>
 <h4>This is the table of world records in archery.</h4>
 <h4>You can add a world record with related details here.</h4>
+<h4>Description of the record is what defines the record.</h4>
   <div class="CSSTableGenerator">
 	<table>
 		<tr>
@@ -22,6 +24,7 @@
 			<td>Name</td>
 			<td>Nationality</td>
 			<td>Year</td>
+			<td></td>
 		</tr>
 		<form action="{{ url_for('worldrecords_page') }}" method="post">
         {% for key, worldrecord in worldrecords %}
@@ -32,36 +35,76 @@
 				<td> {{ worldrecord.name }} </td>
 				<td> {{ allCountries[(worldrecord.country_id)-1][2] }} </td>
 				<td> {{ worldrecord.year }} </td>
+				<td><input type="radio" name="wrecord_to_update" value="{{worldrecord.id}}" form="form1"/></td>
 			</tr>
 		{% endfor %}
 			<tr>
-				<td><input type="submit" class="form-control" value="Delete" name="insert"></td>
+				<td><input type="submit" class="form-control" value="Delete" name="delete"></td>
 		</form>
-		<form action="{{ url_for('worldrecords_page') }}" method="post">
+		<form id="form1" action="{{ url_for('worldrecords_page') }}" method="post">
 				<label for="inputDescription" class="sr-only">Description</label>
 	        	<td><input type="text" id="inputDescription" name="description" class="myinput" placeholder="Description of the record"></td>
-
 	        	<label for="inputScore" class="sr-only">Score</label>
 	        	<td><input type="text" id="inputScore" name="score" class="myinput" placeholder="Score of the record"></td>
-
 				<label for="inputName" class="sr-only">Name</label>
 	        	<td><input type="text" id="inputName" name="name" class="myinput" placeholder="Name of the record holder"></td>
-
 				<td><select class="form-control" name="country_id" required>
      		    <option></option>
      		    {% for key, name, country_code in allCountries %}
      		    <option value="{{allCountries[key-1][0]}}">{{allCountries[key-1][2]}}</option>
       		 	{% endfor %}
        			</select></td>
-
 				<td><input type="text" id="inputYear" name="year" class="myinput" placeholder="The year that record is set"/></td>
+				<td><input type="submit" class="form-control" value="Update" name="update"></td>
 			</tr>
 			</table>
-	</div>
 	<input type="submit" class="form-control" value="Add" name="insert">
-		<div class="error">
-		{{rec_Message}}
+	</div>
+
+	<div class="error">
+	{{rec_Message}}
+	</div>
+	</form>
+
+	<br>
+	<h2>Find World Records</h2>
+	<br>
+
+	<form id="form3" action="{{ url_for('worldrecords_page') }}" method="post">
+		<div class="search">
+		<select class="myinput" name="filter_by">
+		   	<option value="description"> Search by Description </option>
+		   	<option value="score"> Search by Score </option>
+		   	<option value="name"> Search by Publisher </option>
+	   	</select>
+	   	<label for="text" class="sr-only">Search</label>
+		<input type="text" id="inputUsername" name="text" class="myinput" placeholder="enter the value to search">
+		<br>
+		<input type="submit" class="myinput" value="SEARCH IT PLEASE" name="search">
+		<br>
+		<h4>Here are the results:</h4>
 		</div>
-		</form>
+	</form>
+    <div class="CSSTableGenerator">
+    <table>
+      <tr>
+        <td>Description</td>
+		<td>Score</td>
+		<td>Name</td>
+		<td>Nationality</td>
+		<td>Year</td>
+      </tr>
+      {% for key, worldrecord in searchWorldrecords %}
+      <tr>
+        <td> {{ worldrecord.description }} </td>
+		<td> {{ worldrecord.score }} </td>
+		<td> {{ worldrecord.name }} </td>
+		<td> {{ allCountries[(worldrecord.country_id)-1][2] }} </td>
+		<td> {{ worldrecord.year }} </td>
+      </tr>
+      {% endfor %}
+
+    </table>
+    </div>
 
 {% endblock %}
