@@ -61,21 +61,18 @@
 			</table>
 	<input type="submit" class="form-control" value="Add" name="insert">
 	</div>
-
-	<img id="image" src="http://4.bp.blogspot.com/-h4rkZUPNmvk/T9oFuvaRWaI/AAAAAAAAK60/jH0JYfENoHU/s1600/Contortionist-Archery.jpg" alt="can't display" />
-		<script>
-		function imageURL(rec_Message){
-				if (rec_Message=="Sorry, the year you've entered is in the future. Did you come back from the future?")
-					document.getElementById("image").setAttribute("src","https://upload.wikimedia.org/wikipedia/en/d/db/Back_to_the_Future_(time_travel_test)_with_Michael_J._Fox_as_Marty_McFly.jpg");
-				else if (rec_Message.localeCompare("Insertion successfull!")==0 || rec_Message=="Successfully deleted!" || rec_Message=="Update successfull!")
-					document.getElementById("image").setAttribute("src","http://www.fairfield.mn/assets/images/galleries/naadam/Happy_archer.jpg";
-		}
-		</script>
-
+	
 	<div class="error">
 	{{rec_Message}}
 	</div>
 	</form>
+	
+	<img id="image" src="http://4.bp.blogspot.com/-h4rkZUPNmvk/T9oFuvaRWaI/AAAAAAAAK60/jH0JYfENoHU/s1600/Contortionist-Archery.jpg" onclick="imageURL()" />
+		<script>
+		function imageURL(){
+				document.getElementById("image").src="https://upload.wikimedia.org/wikipedia/en/d/db/Back_to_the_Future_(time_travel_test)_with_Michael_J._Fox_as_Marty_McFly.jpg");
+		}
+		</script>
 
 	<br>
 	<h2>Find World Records</h2>
