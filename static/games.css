@@ -9,3 +9,10 @@ h2 {
 h4 {
 	background-color: #d2d3e6;
 }
+
+img {
+    display: block;
+    margin: 0 auto;
+    height: 400px;
+    width: 600px;
+}

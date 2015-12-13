@@ -61,16 +61,17 @@
 			</table>
 	<input type="submit" class="form-control" value="Add" name="insert">
 	</div>
-	
-	<div class="error">
+
+	<div class="error" style="background-color: #000000; color: #ff0000">
 	{{rec_Message}}
 	</div>
 	</form>
-	
-	<img id="image" src="http://4.bp.blogspot.com/-h4rkZUPNmvk/T9oFuvaRWaI/AAAAAAAAK60/jH0JYfENoHU/s1600/Contortionist-Archery.jpg" onclick="imageURL()" />
+
+	<img id="image1" src="http://4.bp.blogspot.com/-h4rkZUPNmvk/T9oFuvaRWaI/AAAAAAAAK60/jH0JYfENoHU/s1600/Contortionist-Archery.jpg" onclick="imageURL()" />
 		<script>
 		function imageURL(){
-				document.getElementById("image").src="https://upload.wikimedia.org/wikipedia/en/d/db/Back_to_the_Future_(time_travel_test)_with_Michael_J._Fox_as_Marty_McFly.jpg");
+				var image = document.getElementById("image1")
+				image.src="https://upload.wikimedia.org/wikipedia/en/d/db/Back_to_the_Future_(time_travel_test)_with_Michael_J._Fox_as_Marty_McFly.jpg";
 		}
 		</script>
 
