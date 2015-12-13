@@ -28,7 +28,7 @@ from tournament import Tournament
 from tournamentCol import TournamentCol
 
 #arif - import classes for Competitions table
-from competition import Competitioner
+from competition import Competition
 from CompetitionCol import CompetitionCollection
 
 from arc_clubs import archery_clubs
@@ -808,7 +808,6 @@ def recurve_page():
     connection.close()
     return redirect(url_for('recurve_page'))
 
-###arif2
 
 @app.route('/recurve_teams', methods=['GET', 'POST'])
 def recurve_teams_page():
@@ -1017,12 +1016,12 @@ def competition_page():
         countries=cursor.fetchall()
         statement="""SELECT * FROM Competitions"""
         cursor.execute(statement)
-        allCompetitioners=CompetitionCollection()
+        allCompetitions=CompetitionCollection()
         for row in cursor:
             ID, CompetitionName, CompType, Year, CountryID = row
-            allCompetitioners.add_competitioner(Competitioner(ID, CompetitionName, CompType, Year, CountryID ))
+            allCompetitions.add_competition(Competition(ID, CompetitionName, CompType, Year, CountryID ))
         cursor.close()
-        return render_template('competitions.html', competitioners = allCompetitioners.get_competitioners(),allCountries=countries, rec_Message=messageToShow)
+        return render_template('competitions.html', competitions = allCompetitions.get_competitions(),allCountries=countries, rec_Message=messageToShow)
 
 
     elif 'competitions_to_delete' in request.form:
@@ -1042,8 +1041,8 @@ def competition_page():
         try:
             statement="""SELECT * FROM Competitions WHERE (CompetitionName=%s) AND (CompType=%s) AND (Year=%s) AND (CountryID=%s)"""
             cursor.execute(statement, (new_compname, new_type,new_year1,new_country_id))
-            competitioner=cursor.fetchone()
-            if competitioner is not None:
+            competition=cursor.fetchone()
+            if competition is not None:
                 messageToShow="competitions already exist"
                 cursor.close()
                 connection.close()

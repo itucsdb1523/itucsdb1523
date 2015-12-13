@@ -10,9 +10,7 @@
 {%block content%}
 <body>
 
-<h1>-->Archery Competitions <--</h1>
-<h4>This is the table of competitions about archery.</h4>
-<h4>You can add a new competition with related details here.</h4>
+<h1>Archery Competitions </h1>
 
  <div class="CSSTableGenerator">
 	<table>
@@ -25,14 +23,14 @@
 			<td></td>
 		</tr>
 		<form action="{{ url_for('competition_page') }}" method="post">
-        {% for key, competitioner in competitioners %}
+        {% for key, competition in competitions %}
 			<tr>
-				<td><input type="checkbox" name="competitions_to_delete" value="{{competitioner.ID}}" /></td>
-				<td> {{ competitioner.CompetitionName }} </td>
-				<td> {{ competitioner.CompType }} </td>
-				<td> {{ competitioner.Year }} </td>
-				<td> {{ allCountries[(competitioner.CountryID)-1][2] }} </td>
-				<td><input type="radio" name="competitions_to_update" value="{{competitioner.ID}}" form="form1"/></td>
+				<td><input type="checkbox" name="competitions_to_delete" value="{{competition.ID}}" /></td>
+				<td> {{ competition.CompetitionName }} </td>
+				<td> {{ competition.CompType }} </td>
+				<td> {{ competition.Year }} </td>
+				<td> {{ allCountries[(competition.CountryID)-1][2] }} </td>
+				<td><input type="radio" name="competitions_to_update" value="{{competition.ID}}" form="form1"/></td>
 			</tr>
 		{% endfor %}
 			<tr>

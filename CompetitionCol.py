@@ -1,14 +1,14 @@
 class CompetitionCollection:
     def __init__(self):
-        self.competitioners={}
+        self.competitions={}
         self.last_key=0
 
-    def add_competitioner(self, competitioner):
+    def add_competition(self, competition):
         self.last_key += 1
-        self.competitioners[self.last_key] = competitioner
+        self.competitions[self.last_key] = competition
 
-    def get_competitioner(self, key):
-        return self.competitioners[key]
+    def get_competition(self, key):
+        return self.competitions[key]
 
-    def get_competitioners(self):
-        return sorted(self.competitioners.items())
+    def get_competitions(self):
+        return sorted(self.competitions.items())
