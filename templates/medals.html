@@ -2,6 +2,7 @@
 <html>
   <head>
 	<link href="{{ url_for('static', filename='tablestyle.css') }}" rel="stylesheet">
+	<link href="{{ url_for('static', filename='games.css') }}" rel="stylesheet">
 
 {%extends "base.html"%}
 
@@ -10,7 +11,7 @@
 {%block content%}
 <body>
 
-<h1>--> Olympic Medals in Archery <--</h1>
+<h1>Olympic Medals in Archery</h1>
 <br>
 <h4>This is the table of olympic medals in archery.</h4>
 <h4>You can add a medal with related details here.</h4>
@@ -71,19 +72,29 @@
 	<input type="submit" class="form-control" value="Add" name="insert">
 	</div>
 
+	<img id="image" src="http://4.bp.blogspot.com/-h4rkZUPNmvk/T9oFuvaRWaI/AAAAAAAAK60/jH0JYfENoHU/s1600/Contortionist-Archery.jpg" alt="can't display" />
+		<script>
+		function imageURL(rec_Message){
+				if (rec_Message=="Sorry, the year you've entered is in the future. Did you come back from the future?")
+					document.getElementById("image").setAttribute("src","https://upload.wikimedia.org/wikipedia/en/d/db/Back_to_the_Future_(time_travel_test)_with_Michael_J._Fox_as_Marty_McFly.jpg");
+				else if (rec_Message.localeCompare("Insertion successfull!")==0 || rec_Message=="Successfully deleted!" || rec_Message=="Update successfull!")
+					document.getElementById("image").setAttribute("src","http://www.fairfield.mn/assets/images/galleries/naadam/Happy_archer.jpg";
+		}
+		</script>
+
 		<div class="error">
 		{{rec_Message}}
 		</div>
 		</form>
 
 <br>
-	<h2>Find Olympic Medals</h2>
+	<h2>Find all medals of a person or a team</h2>
 	<br>
 
 	<form id="form3" action="{{ url_for('medals_page') }}" method="post">
 		<div class="search">
 		<select class="myinput" name="filter_by">
-		   	<option value="name"> Search by Name of the medalist or team </option>
+		   	<option value="name"> Search by name of the medalist or team </option>
 	   	</select>
 	   	<label for="text" class="sr-only">Search</label>
 		<input type="text" id="inputUsername" name="text" class="myinput" placeholder="enter the value to search">

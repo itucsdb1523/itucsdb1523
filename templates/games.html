@@ -2,6 +2,7 @@
 <html>
   <head>
 	<link href="{{ url_for('static', filename='tablestyle.css') }}" rel="stylesheet">
+	<link href="{{ url_for('static', filename='games.css') }}" rel="stylesheet">
 
 {%extends "base.html"%}
 
@@ -10,7 +11,7 @@
 {%block content%}
 <body>
 
-<h1>--> Video Games about Archery <--</h1>
+<h1>Video Games about Archery</h1>
 <br>
 <h4>This is the table of released video games about archery.</h4>
 <h4>You can add a new game with related details here.</h4>
@@ -55,6 +56,18 @@
 			</table>
 	<input type="submit" class="form-control" value="Add" name="insert">
 	</div>
+
+		<img src="http://4.bp.blogspot.com/-h4rkZUPNmvk/T9oFuvaRWaI/AAAAAAAAK60/jH0JYfENoHU/s1600/Contortionist-Archery.jpg" onload="this.onload=null; this.src=imageURL(rec_Message);" />
+		<script>
+		function imageURL(rec_Message){
+			var address = "http://4.bp.blogspot.com/-h4rkZUPNmvk/T9oFuvaRWaI/AAAAAAAAK60/jH0JYfENoHU/s1600/Contortionist-Archery.jpg"
+			if (rec_Message="Sorry, the year you've entered is in the future. Did you come back from the future?")
+				address = "https://upload.wikimedia.org/wikipedia/en/d/db/Back_to_the_Future_(time_travel_test)_with_Michael_J._Fox_as_Marty_McFly.jpg"
+			else if (rec_Message.localeCompare("Insertion successfull!")==0 || rec_Message="Successfully deleted!" || rec_Message="Update successfull!")
+				address = "http://www.fairfield.mn/assets/images/galleries/naadam/Happy_archer.jpg"
+			return address;
+		}
+		</script>
 
 		<div class="error">
 		{{rec_Message}}
