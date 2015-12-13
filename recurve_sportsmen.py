@@ -5,3 +5,10 @@ class Recurver:
         self.surname=surname
         self.birth_year=birth_year
         self.country_id=country_id
+
+
+class Recurve_Team:
+    def __init__(self, id, name, contact):
+        self.id=id
+        self.team_name=name
+        self.team_contact=contact
