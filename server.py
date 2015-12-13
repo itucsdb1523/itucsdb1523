@@ -20,8 +20,8 @@ from CompoundSportsmen import Compounder
 from CompoundCol import CompoundCollection
 
 #import classes for recurve_sportsmen table
-from recurve_sportsmen import Recurver
-from recurveCol import recurveCollection
+from recurve_sportsmen import Recurver, Recurve_Team
+from recurveCol import recurveCollection, recurveTeamCollection
 
 #import classes for tournament table
 from tournament import Tournament
@@ -132,6 +132,9 @@ def initialize_database():
         query = """DROP TABLE IF EXISTS SCORE"""
         cursor.execute(query)
 
+        query="""DROP TABLE  IF EXISTS recurve_teams """
+        cursor.execute(query)
+
         query = """ DROP TABLE IF EXISTS RECURVE_SPORTSMEN """
         cursor.execute(query)
 
@@ -164,6 +167,19 @@ def initialize_database():
 
         query = """ DROP TABLE IF EXISTS informations"""
         cursor.execute(query)
+
+        query=""" DROP TABLE IF EXISTS team_info """
+        cursor.execute(query)
+
+        #create team_info table
+        query=""" CREATE TABLE team_info (
+            id serial PRIMARY KEY,
+            team_name character varying(30) NOT NULL,
+            team_contact character varying(50)
+        )"""
+        cursor.execute(query)
+
+
 
         #create countries table
         query = """ DROP TABLE IF EXISTS COUNTRIES """
@@ -230,6 +246,14 @@ def initialize_database():
         birth_year integer,
         country_id integer NOT NULL references countries(id)
         )"""
+        cursor.execute(query)
+
+        #create recurve_teams table
+        query = """CREATE TABLE recurve_teams (
+            id serial PRIMARY KEY,
+            team_id integer NOT NULL references team_info(id) ON DELETE CASCADE ON UPDATE CASCADE,
+            recurver_id integer NOT NULL references recurve_sportsmen(id) ON DELETE CASCADE ON UPDATE CASCADE
+            )"""
         cursor.execute(query)
 
         #create mounted_sportsmen table
@@ -762,17 +786,17 @@ def recurve_page():
             statement="""SELECT * FROM recurve_sportsmen WHERE (NAME=%s) AND (SURNAME=%s)"""
             cursor.execute(statement, (new_name, new_surname))
             recurver=cursor.fetchone()
-            if recurver is not None:
-                session['ecb_message']="Sorry, this recurve sportsman already exists."
-                cursor.close()
-                connection.close()
-                return redirect(url_for('recurve_page'))
-            elif 'recurver_to_update' in request.form:
+            if 'recurver_to_update' in request.form:
                 session['ecb_message']="Update successfull!"
                 recurverID=request.form.get('recurver_to_update')
                 statement="""UPDATE recurve_sportsmen SET (name, surname, birth_year, country_id)=(%s, %s, %s, %s) WHERE (ID=%s)"""
                 cursor.execute(statement, (new_name, new_surname, new_birth_year, new_country_id, recurverID))
                 connection.commit()
+            elif recurver is not None:
+                session['ecb_message']="Sorry, this recurve sportsman already exists."
+                cursor.close()
+                connection.close()
+                return redirect(url_for('recurve_page'))
             else: #try to insert
                 statement="""INSERT INTO recurve_sportsmen (name, surname, birth_year, country_id) VALUES(%s, %s, %s, %s)"""
                 cursor.execute(statement, (new_name, new_surname, new_birth_year, new_country_id))
@@ -785,6 +809,120 @@ def recurve_page():
     return redirect(url_for('recurve_page'))
 
 ###arif2
+
+@app.route('/recurve_teams', methods=['GET', 'POST'])
+def recurve_teams_page():
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor=connection.cursor()
+        if 'ecb_message' in session:
+            messageToShow=session['ecb_message']
+            session['ecb_message']=""
+        else:
+            messageToShow=""
+        if request.method == 'GET':
+            statement="""SELECT * FROM recurve_sportsmen"""
+            cursor.execute(statement)
+            allRecurvers=recurveCollection()
+            for row in cursor:
+                id, name, surname, birth_year, country_id = row
+                allRecurvers.add_recurver(Recurver(id, name, surname, birth_year, country_id))
+            statement="""SELECT * FROM team_info"""
+            cursor.execute(statement)
+            allTeams=recurveTeamCollection()
+            for row in cursor:
+                id, team_name, team_contact = row
+                allTeams.add_team(Recurve_Team(id, team_name, team_contact))
+            return render_template('recurve_teams.html', recurvers=allRecurvers.get_recurvers(), recTableMessage=messageToShow, teams=allTeams.get_teams())
+        elif 'insertTeam' in request.form:
+            team_name = request.form['inputTeamName']
+            team_contact = request.form['inputContact']
+            statement="""SELECT * FROM team_info WHERE (team_name=%s)"""
+            cursor.execute(statement, (team_name,))
+            teamWithSameName=cursor.fetchone()
+            if teamWithSameName is not None:
+                session['ecb_message']="Sorry, the team name is already taken."
+                cursor.close()
+                return redirect(url_for('recurve_teams_page'))
+            else: #insert new team
+                statement="""INSERT INTO team_info (team_name, team_contact) VALUES(%s, %s)"""
+                cursor.execute(statement, (team_name, team_contact))
+                connection.commit()
+            return redirect(url_for('recurve_teams_page'))
+        elif 'insertMember' in request.form:
+            team_id=request.form['dd_team_id']
+            member_id=request.form['member_id']
+            statement="""SELECT count(*) FROM recurve_teams WHERE (team_id=%s)"""
+            cursor.execute(statement, (team_id,))
+            resultCount=cursor.fetchone()
+            if resultCount[0] == 3: #team is full
+                session['ecb_message']="Sorry, the team is full."
+                cursor.close()
+                return redirect(url_for('recurve_teams_page'))
+            statement="""SELECT * FROM recurve_teams WHERE (recurver_id=%s)"""
+            cursor.execute(statement, (member_id,))
+            memberInTeam=cursor.fetchone()
+            if memberInTeam is not None: #Recurver is in a team
+                session['ecb_message']="Sorry, the recurve archer is already in a team."
+                cursor.close()
+            else: #insert
+                statement="""INSERT INTO recurve_teams (team_id, recurver_id) VALUES(%s, %s)"""
+                cursor.execute(statement, (team_id, member_id))
+                connection.commit()
+                session['ecb_message']="The recurve archer has joined to the team."
+                cursor.close()
+            return redirect(url_for('recurve_teams_page'))
+        elif 'teams_to_delete' in request.form:
+            keys = request.form.getlist('teams_to_delete')
+            for key in keys:
+                statement="""DELETE FROM team_info WHERE (ID=%s)"""
+                cursor.execute(statement, (key,))
+            connection.commit()
+            cursor.close()
+            session['ecb_message']="Successfully deleted!"
+            return redirect(url_for('recurve_teams_page'))
+
+@app.route('/recurve_team/<int:key>', methods=['GET', 'POST'])
+def recurve_team_page(key):
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor=connection.cursor()
+        cursor2=connection.cursor()
+        if 'ecb_message' in session:
+            messageToShow=session['ecb_message']
+            session['ecb_message']=""
+        else:
+            messageToShow=""
+        if request.method == 'GET':
+            statement="""SELECT * FROM countries"""
+            cursor.execute(statement)
+            countries=cursor.fetchall()
+            statement="""SELECT * FROM team_info WHERE (id=%s)"""
+            cursor.execute(statement, (key,))
+            catchInfo=cursor.fetchone()
+            theTeam=Recurve_Team(catchInfo[0], catchInfo[1], catchInfo[2])
+            thisYear = datetime.datetime.today().year
+            statement="""SELECT * FROM recurve_teams WHERE (team_id=%s)"""
+            cursor.execute(statement, (key,))
+            recurversInTeam = recurveCollection()
+            for row in cursor:
+                id, team_id, recurver_id = row
+                statement="""SELECT * FROM recurve_sportsmen WHERE (id=%s)"""
+                cursor2.execute(statement, (recurver_id,))
+                aRecurver=cursor2.fetchone()
+                recurversInTeam.add_recurver(Recurver(aRecurver[0], aRecurver[1], aRecurver[2], aRecurver[3], aRecurver[4]))
+            return render_template('recurve_team.html', recurvers=recurversInTeam.get_recurvers(), recTableMessage=messageToShow, team=theTeam, current_year=thisYear, allCountries=countries)
+        elif 'recurvers_to_delete' in request.form: #delete
+            keys = request.form.getlist('recurvers_to_delete')
+            for element in keys:
+                statement="""DELETE FROM recurve_teams WHERE (recurver_id=%s)"""
+                cursor.execute(statement, (element,))
+            connection.commit()
+            cursor.close()
+            session['ecb_message']="Successfully deleted!"
+            return redirect(url_for('recurve_team_page', key=key))
+        else:
+            return redirect(url_for('recurve_team_page', key=key))
+
+
 
 @app.route('/mounted_archery', methods=['GET', 'POST'])
 def mounted_page():
@@ -1379,7 +1517,6 @@ def tournament_information_page():
     cursor.close()
     connection.close()
     return redirect(url_for('tournament_information_page'))
-
 
 @app.route('/worldrecords',methods=['GET', 'POST'])
 def worldrecords_page():

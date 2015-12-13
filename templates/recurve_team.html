@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <link href="{{ url_for('static', filename='tablestyle.css') }}" rel="stylesheet">
+
+{%extends "base.html"%}
+
+{%block title%}Recurve Team{% endblock %}
+
+
+{%block content%}
+ <body>
+	<h2>{{team.team_name}}</h2>
+	<div class="CSSTableGenerator">
+  	<table>
+    <tr>
+      <td></td>
+      <td>Name</td>
+      <td>Surname</td>
+      <td>Age</td>
+      <td>Country</td>
+    </tr>
+
+    <form id="form2" action="{{ url_for('recurve_team_page', key=team.id) }}" method="post">
+    {% for key, recurver in recurvers %}
+      <tr>
+        <td><input type="checkbox" name="recurvers_to_delete" value="{{recurver.id}}" /></td>
+        <td> {{ recurver.name }} </td>
+        <td> {{ recurver.surname }} </td>
+        <td> {{ current_year - recurver.birth_year }} </td>
+        <td> {{ allCountries[(recurver.country_id)-1][2] }} </td>
+      </tr>
+    {% endfor %}
+    </table>
+    <input type="submit" class="form-control" value="Delete" name="delete">
+    </div>
+    </form>
+
+
+    <div class="error">
+    {{recTableMessage}}
+    </div>
+
+{% endblock %}

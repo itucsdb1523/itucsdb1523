@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <link href="{{ url_for('static', filename='tablestyle.css') }}" rel="stylesheet">
+
+{%extends "base.html"%}
+
+{%block title%}Recurve{% endblock %}
+
+
+{%block content%}
+<body>
+  <h1>Recurve Archery Teams</h1>
+  <h2>Teams</h2>
+  <div class="CSSTableGenerator">
+  <table>
+  	<tr>
+  		<td></td>
+  		<td>Team Name</td>
+  		<td>Contact Team</td>
+  	</tr>
+  	<form id="form" action="{{ url_for('recurve_teams_page') }}" method="post">
+    {% for key, team in teams %}
+    <tr>
+        <td><input type="checkbox" name="teams_to_delete" value="{{team.id}}" /></td>
+        <td><a href="{{ url_for('recurve_team_page', key=team.id) }}"><p style="color:green;">{{team.team_name}}</p></a></td>
+        <td>{{team.team_contact}}</td>
+    </tr>
+    {% endfor %}
+    <tr>
+    <td><input type="submit" class="form-control" value="Delete" name="delete"></td>
+	</form>
+
+  	<form id="form1" action="{{ url_for('recurve_teams_page') }}" method="post">
+	 <label for="inputName" class="sr-only">Team Name</label>
+	  <td><input type="text" id="inputName" name="inputTeamName" class="myinput" placeholder="Team Name" required autofocus></td>
+     <label for="inputContact" class="sr-only">Contact</label>
+	  <td><input type="text" id="inputContact" class="myinput" name="inputContact" placeholder="Contact"/></td>
+	</tr>
+  </table>
+  	  <input type="submit" class="form-control" value="Add" name="insertTeam">
+  	</form>
+  </div>
+
+  <div class="error">
+    {{recTableMessage}}
+  </div>
+
+
+
+  <h2>Add Players to Teams</h2>
+  <div class="CSSTableGenerator">
+  <table>
+    <tr>
+      <td>Team</td>
+      <td>Member</td>
+    </tr>
+
+	<form id="form2" action="{{ url_for('recurve_teams_page') }}" method="post">
+	<tr>
+
+	  <td><select class="form-control" name="dd_team_id" required>
+        <option></option>
+        {% for key, team in teams %}
+        <option value="{{team.id}}">{{team.team_name}}</option>
+        {% endfor %}
+        </select></td>
+	  <td><select class="form-control" name="member_id" required>
+        <option></option>
+        {% for key, recurver in recurvers %}
+        <option value="{{recurver.id}}">{{recurver.name}} {{recurver.surname}}</option>
+        {% endfor %}
+        </select></td>
+	</tr>
+	</table>
+	<input type="submit" class="form-control" value="Add" name="insertMember">
+	</form>
+
+
+
+
+   </div>
+    <div class="error">
+    {{rec_Message}}
+    </div>
+
+
+
+{% endblock %}
