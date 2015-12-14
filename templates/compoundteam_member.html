@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <link href="{{ url_for('static', filename='tablestyle.css') }}" rel="stylesheet">
+
+{%extends "base.html"%}
+
+{%block title%}Compound Team{% endblock %}
+
+
+{%block content%}
+ <body>
+	<h2>{{compoundteam.compound_team}}</h2>
+	<div class="CSSTableGenerator">
+  	<table>
+    <tr>
+      <td></td>
+      <td>Name</td>
+      <td>Surname</td>
+      <td>Age</td>
+      <td>Country</td>
+    </tr>
+
+    <form id="form2" action="{{ url_for('compoundteam_page', key=compoundteam.id) }}" method="post">
+    {% for key, compounder in compounders %}
+      <tr>
+        <td><input type="checkbox" name="compounders_to_delete" value="{{compounder.id}}" /></td>
+        <td> {{ compounder.Name }} </td>
+        <td> {{ compounder.Lastname }} </td>
+        <td> {{ current_year - compounder.BirthYear }} </td>
+        <td> {{ allCountries[(compounder.CountryID)-1][2] }} </td>
+      </tr>
+    {% endfor %}
+    </table>
+    <input type="submit" class="form-control" value="Delete" name="delete">
+    </div>
+    </form>
+
+
+    <div class="error">
+    {{recTableMessage}}
+    </div>
+
+{% endblock %}

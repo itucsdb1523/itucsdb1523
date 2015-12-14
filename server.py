@@ -15,9 +15,8 @@ from flask.helpers import url_for
 from score import Score
 from scoreCol import ScoreCol
 
-#kerem - import classes for CompoundSportsmen table
-from CompoundSportsmen import Compounder
-from CompoundCol import CompoundCollection
+from CompoundSportsmen import Compounder, CompoundTeam
+from CompoundCol import CompoundCollection , CompoundTeamCollection
 
 #import classes for recurve_sportsmen table
 from recurve_sportsmen import Recurver, Recurve_Team
@@ -48,9 +47,6 @@ from wrecordsCol import wrecordsCol
 #import classes for olympic medals table
 from medal import Medal
 from medalCol import medalCol
-
-from compoundteam import CompoundTeam
-from compoundteamcol import CompoundTeamCollection
 
 #import classes for mounted_sportsmen table
 from mountedSportsmen import MountedArcher
@@ -156,19 +152,22 @@ def initialize_database():
         query = """DROP TABLE IF EXISTS ArcheryClubs"""
         cursor.execute(query)
 
+        query = """ DROP TABLE IF EXISTS COMPOUNDTEAM"""
+        cursor.execute(query)
+
         query = """ DROP TABLE IF EXISTS COMPOUNDSPORTSMEN """
         cursor.execute(query)
 
         query = """ DROP TABLE IF EXISTS TOURNAMENT"""
         cursor.execute(query)
 
-        query = """ DROP TABLE IF EXISTS COMPOUNDTEAM"""
-        cursor.execute(query)
-
         query = """ DROP TABLE IF EXISTS informations"""
         cursor.execute(query)
 
         query=""" DROP TABLE IF EXISTS team_info """
+        cursor.execute(query)
+
+        query=""" DROP TABLE IF EXISTS compound_data """
         cursor.execute(query)
 
         #create team_info table
@@ -335,11 +334,18 @@ def initialize_database():
         )"""
         cursor.execute(query)
 
-        query = """CREATE TABLE COMPOUNDTEAM (
-            ID SERIAL PRIMARY KEY,
-            TeamName character varying(20) NOT NULL,
-            CountryID integer NOT NULL references countries(id)
+        query=""" CREATE TABLE compound_data (
+            id serial PRIMARY KEY,
+            compound_team character varying(30) NOT NULL,
+            compound_contact character varying(30)
         )"""
+        cursor.execute(query)
+
+        query = """CREATE TABLE COMPOUNDTEAM (
+            id serial PRIMARY KEY,
+            compoundteam_id integer NOT NULL references compound_data(id) ON DELETE CASCADE ON UPDATE CASCADE,
+            compounder_id integer NOT NULL references compoundsportsmen(id) ON DELETE CASCADE ON UPDATE CASCADE
+            )"""
         cursor.execute(query)
 
         #insert gametypes
@@ -1089,7 +1095,6 @@ def tournament_page():
             id, name, country_id, year = row
             allTournaments.add_tournament(Tournament(id, name, country_id, year))
         return render_template('tournament.html', tournaments=allTournaments.get_tournaments(), allCountries=countries, current_time=now.ctime(), rec_Message=messageToShow, current_year=thisYear)
-    #delete from recurve sportsmen
     elif 'tournaments_to_delete' in request.form:
         keys = request.form.getlist('tournaments_to_delete')
         for key in keys:
@@ -1234,7 +1239,6 @@ def compound_page():
         cursor.close()
         return render_template('compound.html', compounders=allCompounders.get_compounders(), allCountries=countries, current_time=now.ctime(), rec_Message=messageToShow, current_year=thisYear)
 
-    #delete from recurve sportsmen
     elif 'compounders_to_delete' in request.form:
         keys = request.form.getlist('compounders_to_delete')
         for key in keys:
@@ -1242,12 +1246,9 @@ def compound_page():
             cursor.execute(statement, (key,))
         connection.commit()
         cursor.close()
-        #alttaki message degismeli
         session['message']="Successfully deleted!"
         return redirect(url_for('compound_page'))
 
-
-    #insert to recurve sportsmen
     else:
         new_name=request.form['Name']
         new_surname=request.form['LastName']
@@ -1282,63 +1283,114 @@ def compound_page():
     return redirect(url_for('compound_page'))
 
 @app.route('/compound_teams', methods=['GET', 'POST'])
-def compoundteam_page():
+def compoundteams_page():
     with dbapi2.connect(app.config['dsn']) as connection:
         cursor=connection.cursor()
-        messageToShow=""
-    if request.method == 'GET':
-        statement="""SELECT * FROM countries"""
-        cursor.execute(statement)
-        countries=cursor.fetchall()
-        statement="""SELECT * FROM CompoundTeam"""
-        cursor.execute(statement)
-        allCompoundTeams=CompoundTeamCollection()
-        for row in cursor:
-            ID, TeamName,CountryID = row
-            allCompoundTeams.add_compoundteam(CompoundTeam(ID, TeamName, CountryID))
-        cursor.close()
-        return render_template('compoundteam.html', compoundteams=allCompoundTeams.get_compoundteams(), allCountries=countries, rec_Message=messageToShow,)
-
-    #delete from recurve sportsmen
-    elif 'compoundteams_to_delete' in request.form:
-        keys = request.form.getlist('compoundteams_to_delete')
-        for key in keys:
-            statement="""DELETE FROM CompoundTeam WHERE (ID=%s)"""
-            cursor.execute(statement, (key,))
-        connection.commit()
-        cursor.close()
-        session['message']="Successfully deleted!"
-        return redirect(url_for('compoundteam_page'))
-
-    else:
-        new_name=request.form['TeamName']
-        new_country_id=request.form['country_id']
-        session['message']="Insertion successfull!"
-        try:
-            statement="""SELECT * FROM Compoundteam WHERE (TEAMNAME=%s)"""
-            cursor.execute(statement, (new_name,))
-            compoundteam=cursor.fetchone()
-            if compoundteam is not None:
-                session['message']="Sorry, this compound team already exists."
+        if 'message' in session:
+            messageToShow=session['message']
+            session['message']=""
+        else:
+            messageToShow=""
+        if request.method == 'GET':
+            statement="""SELECT * FROM compoundsportsmen"""
+            cursor.execute(statement)
+            allCompounders=CompoundCollection()
+            for row in cursor:
+                ID, Name, Lastname, BirthYear, CountryID = row
+                allCompounders.add_compounder(Compounder(ID, Name, Lastname, BirthYear, CountryID))
+            statement="""SELECT * FROM compound_data"""
+            cursor.execute(statement)
+            allTeams=CompoundTeamCollection()
+            for row in cursor:
+                id, compound_team, compound_contact = row
+                allTeams.add_compoundteam(CompoundTeam(id, compound_team, compound_contact))
+            return render_template('compoundteam.html', compounders=allCompounders.get_compounders(), recTableMessage=messageToShow, compoundteams=allTeams.get_compoundteams())
+        elif 'insert' in request.form:
+            compound_team = request.form['inputName']
+            compound_contact = request.form['inputlink']
+            statement="""SELECT * FROM compound_data WHERE (compound_team=%s)"""
+            cursor.execute(statement, (compound_team,))
+            Ifthereissame=cursor.fetchone()
+            if Ifthereissame is not None:
                 cursor.close()
-                connection.close()
-                return redirect(url_for('compoundteam_page'))
-            elif 'compoundteam_to_update' in request.form:
-                session['message']="Update successfull!"
-                compoundteamID=request.form.get('compoundteam_to_update')
-                statement="""UPDATE compoundteam SET (teamname, countryid)=(%s, %s) WHERE (ID=%s)"""
-                cursor.execute(statement, (new_name, new_country_id, compoundteamID))
+                return redirect(url_for('compoundteams_page'))
+            else: #insert new team
+                statement="""INSERT INTO compound_data (compound_team, compound_contact) VALUES(%s, %s)"""
+                cursor.execute(statement, (compound_team, compound_contact))
                 connection.commit()
-            else: #try to insert
-                statement="""INSERT INTO Compoundteam (TeamName, CountryID) VALUES(%s, %s)"""
-                cursor.execute(statement, (new_name,new_country_id))
+            return redirect(url_for('compoundteams_page'))
+        elif 'insertMember' in request.form:
+            compoundteam_id=request.form['dd_team_id']
+            compound_member=request.form['compound_member']
+            statement="""SELECT count(*) FROM compoundteam WHERE (compoundteam_ID=%s)"""
+            cursor.execute(statement, (compoundteam_id,))
+            resultCount=cursor.fetchone()
+            if resultCount[0] == 3: #team is full
+                session['message']="Sorry, the team is full."
+                cursor.close()
+                return redirect(url_for('compoundteams_page'))
+            statement="""SELECT * FROM compoundteam WHERE (compounder_id=%s)"""
+            cursor.execute(statement, (compound_member,))
+            memberInTeam=cursor.fetchone()
+            if memberInTeam is not None:
+                cursor.close()
+            else: #insert
+                statement="""INSERT INTO compoundteam (compoundteam_id, compounder_id) VALUES(%s, %s)"""
+                cursor.execute(statement, (compoundteam_id, compound_member))
                 connection.commit()
-        except dbapi2.DatabaseError:
-            connection.rollback()
-            session['message']="Registration failed due to a Database Error."
-    cursor.close()
-    connection.close()
-    return redirect(url_for('compoundteam_page'))
+                session['message']="The compound archer has joined to the team."
+                cursor.close()
+            return redirect(url_for('compoundteams_page'))
+        elif 'compoundteams_to_delete' in request.form:
+            keys = request.form.getlist('compoundteams_to_delete')
+            for key in keys:
+                statement="""DELETE FROM compound_data WHERE (id=%s)"""
+                cursor.execute(statement, (key,))
+            connection.commit()
+            cursor.close()
+            session['ecb_message']="Successfully deleted!"
+            return redirect(url_for('compoundteams_page'))
+
+@app.route('/compound_team/<int:key>', methods=['GET', 'POST'])
+def compoundteam_page(key):
+    with dbapi2.connect(app.config['dsn']) as connection:
+        cursor=connection.cursor()
+        cursor2=connection.cursor()
+        if 'message' in session:
+            messageToShow=session['message']
+            session['message']=""
+        else:
+            messageToShow=""
+        if request.method == 'GET':
+            statement="""SELECT * FROM countries"""
+            cursor.execute(statement)
+            countries=cursor.fetchall()
+            statement="""SELECT * FROM compound_data WHERE (id=%s)"""
+            cursor.execute(statement, (key,))
+            catchInfo=cursor.fetchone()
+            theTeam=CompoundTeam(catchInfo[0], catchInfo[1], catchInfo[2])
+            thisYear = datetime.datetime.today().year
+            statement="""SELECT * FROM compoundteam WHERE (id=%s)"""
+            cursor.execute(statement, (key,))
+            CompoundersInTeam = CompoundCollection()
+            for row in cursor:
+                id, compoundteam_id, compounder_id = row
+                statement="""SELECT * FROM compoundsportsmen WHERE (id=%s)"""
+                cursor2.execute(statement, (compounder_id,))
+                Compound=cursor2.fetchone()
+                CompoundersInTeam.add_compounder(Compounder(Compound[0], Compound[1], Compound[2],Compound[3], Compound[4]))
+            return render_template('compoundteam_member.html', compounders=CompoundersInTeam.get_compounders(),recTableMessage=messageToShow, compoundteam=theTeam, current_year=thisYear, allCountries=countries)
+        elif 'compounders_to_delete' in request.form:
+            keys = request.form.getlist('compounders_to_delete')
+            for element in keys:
+                statement="""DELETE FROM compoundteam WHERE (compounder_id=%s)"""
+                cursor.execute(statement, (element,))
+            connection.commit()
+            cursor.close()
+            session['ecb_message']="Succesfully deleted"
+            return redirect(url_for('compoundteam_page', key=key))
+        else:
+            return redirect(url_for('compoundteam_page', key=key))
 
 @app.route('/Sponsors', methods=['GET', 'POST'])
 def sponsors_page():
@@ -1367,7 +1419,6 @@ def sponsors_page():
             cursor.execute(statement, (key,))
         connection.commit()
         cursor.close()
-        #alttaki message degismeli
         session['message']="Successfully deleted!"
         return redirect(url_for('sponsors_page'))
 

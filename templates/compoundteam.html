@@ -16,38 +16,70 @@
 	<table>
 		<tr>
 			<td></td>
-			<td>TeamName</td>
-			<td>Country</td>
-			<td></td>
+			<td>Team Name</td>
+			<td>Contact Team</td>
 		</tr>
-		<form action="{{ url_for('compoundteam_page') }}" method="post">
+		<form id="form" action="{{ url_for('compoundteams_page') }}" method="post">
         {% for key, compoundteam in compoundteams %}
-			<tr>
-				<td><input type="checkbox" Name="compoundteams_to_delete" value="{{compoundteam.ID}}" /></td>
-				<td> {{ compoundteam.TeamName }} </td>
-				<td> {{ allCountries[(compoundteam.CountryID)-1][2] }} </td>
-				<td><input type="radio" name="compoundteam_to_update" value="{{compoundteam.ID}}" form="form1"/></td>
+		<tr>
+				<td><input type="checkbox" name="compoundteams_to_delete" value="{{compoundteam.id}}" /></td>
+				<td><a href="{{ url_for('compoundteam_page', key=compoundteam.id) }}"><p style="color:green;">{{compoundteam.compound_team}}</p></a></td>
+				<td>{{compoundteam.compound_contact}}</td>
 			</tr>
-		{% endfor %}
+			{% endfor %}
 			<tr>
-				<td><input type="submit" class="form-control" value="Delete" Name="insert"></td>
-		</form>
-		<form id="form1" action="{{ url_for('compoundteam_page') }}" method="post">
-				<label for="inputName" class="sr-only">Name</label>
-	        	<td><input type="text" ID="inputUsername" Name="TeamName" class="myinput" placeholder="TeamName" required autofocus></td>
-				<td><select class="form-control" Name="country_id" required>
-				<option></option>
-				{% for key, name, country_code in allCountries %}
-				<option value="{{allCountries[key-1][0]}}">{{allCountries[key-1][2]}}</option>
-				{% endfor %}
-				</select></td>
-				<td><input type="submit" class="form-control" value="Update" name="update"></td>
+			<td><input type="submit" class="form-control" value="Delete" name="delete"></td>
+			</form>
+
+			<form id="form1" action="{{ url_for('compoundteams_page') }}" method="post">
+
+	        	<td><input type="text" id="inputName" name="inputName" class="myinput" placeholder="Team Name" required autofocus></td>
+
+	  			<td><input type="text" id="inputlink" class="myinput" name="inputlink" placeholder="Link"/></td>
 			</tr>
 			</table>
-	</div>
-		<input type="submit" class="form-control" value="Add" Name="insert">
-		<div class="error">
-		{{rec_Message}}
-		</div>
+		<input type="submit" class="form-control" value="Add" name="insert">
 		</form>
+ 		</div>
+		<div class="error">
+		{{recTableMessage}}
+		</div>
+
+		<h2>Add Players to Teams</h2>
+  		<div class="CSSTableGenerator">
+  		<table>
+    	<tr>
+      <td>Team</td>
+      <td>Member</td>
+    </tr>
+
+	<form id="form2" action="{{ url_for('compoundteams_page') }}" method="post">
+	<tr>
+
+	  <td><select class="form-control" name="dd_team_id" required>
+        <option></option>
+        {% for key, compoundteam in compoundteams %}
+        <option value="{{compoundteam.id}}">{{compoundteam.compound_team}}</option>
+        {% endfor %}
+        </select></td>
+	  <td><select class="form-control" name="compound_member" required>
+        <option></option>
+        {% for key, compounder in compounders %}
+        <option value="{{compounder.id}}">{{compounder.Name}} {{compounder.Lastname}}</option>
+        {% endfor %}
+        </select></td>
+	</tr>
+	</table>
+	<input type="submit" class="form-control" value="Add" name="insertMember">
+	</form>
+
+
+
+
+   </div>
+    <div class="error">
+    {{rec_Message}}
+    </div>
+
+
 {% endblock %}
