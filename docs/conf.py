@@ -242,7 +242,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'itucsdb1523', 'itucsdb1523 Documentation',
-   'Team Name', 'itucsdb15', 'One line description of project.',
+   'Team Name', 'itucsdb1523', 'One line description of project.',
    'Miscellaneous'),
 ]
 
