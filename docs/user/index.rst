@@ -7,7 +7,7 @@ screenshots whereever appropriate**
 **to add a picture, use the following example**::
 
    .. figure:: picture.png
-      :scale: 50 %
+      :scale: 150 %
       :alt: map to buried treasure
 
       This is the caption of the figure (a simple paragraph).
@@ -19,4 +19,3 @@ screenshots whereever appropriate**
    member3
    member4
    member5
-   
