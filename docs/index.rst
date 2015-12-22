@@ -13,8 +13,7 @@ Welcome to itucsdb1523's documentation!
 
 **project description goes here (a few paragraphs)**
 
-Contents:
-.. toctree::
+Contents:.. toctree::
    :maxdepth: 1
 
    user/index
