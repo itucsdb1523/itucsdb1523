@@ -5,10 +5,10 @@ Mounted Archers Page
 --------------------
 This page is for displaying the mounted sportsmen table. Basic operations (add, delete, update, find) for the mounted sportmen table are performed in this page.
 
-.. figure:: http://i.imgur.com/v05UcR9.png?1
+.. figure:: images/MountedArchery.png
       :scale: 50 %
       :alt: mounted sportsmen table
-      
+
       Fig. 1: Mounted arhers page view.
 
 Add operation
@@ -32,7 +32,7 @@ Tournaments Page
 ----------------
 This page is for displaying the tournaments table. Basic operations (add, delete, update) for the tournaments table are performed in this page.
 
-.. figure:: http://i.imgur.com/DmCdoPC.png
+.. figure:: images/Tournaments.png
       :scale: 50 %
       :alt: tournaments table
 
@@ -55,7 +55,7 @@ Recurve Scores Page
 -------------------
 This page is for displaying the scores table for the recurve archers. Basic operations (add, delete, update) for the scores table are performed in this page.
 
-.. figure:: http://i.imgur.com/4ljtqhL.png
+.. figure:: images/RecurveScores.png
       :scale: 50 %
       :alt: scores table
 
