@@ -18,13 +18,13 @@ Competitions page is located at Tournaments dropdown table in home page.
       Competitions page
 
 Add Operation
--------------
+^^^^^^^^^^^^^
 
 Users want to add a competition in the page should fill all the blanks on the table that are competition name, type, year and country. Year should be between 1900 and 2100. Country is selected in the dropdown in table. After clicking add button new record will be added.
 
 
 Delete Operation
-----------------
+^^^^^^^^^^^^^^^^
 
 .. figure:: images/delete.JPG
       :scale: 50 %
@@ -35,7 +35,7 @@ Delete Operation
 Users want to delete competition should check the checkbox seen on Figure 2 that is on the left handside of records. If users want to delete more than one record, multiple checking is permitted. After checking checkboxes, user should click the delete button to delete records.
 
 Update Operation
-----------------
+^^^^^^^^^^^^^^^^
 
 .. figure:: images/update.JPG
       :scale: 50 %
@@ -58,13 +58,13 @@ Archery Clubs page is located at Other dropdown table in home page.
       Archery Clubs page
 
 Add Operation
--------------
+^^^^^^^^^^^^^
 
 Users want to add a club in the page should fill all the blanks on the table that are club name, year and country. Year should be between 1900 and 2100. Country is selected in the dropdown in table. After clicking add button new record will be added.
 
 
 Delete Operation
-----------------
+^^^^^^^^^^^^^^^^
 
 .. figure:: images/delete.JPG
       :scale: 50 %
@@ -75,7 +75,7 @@ Delete Operation
 Users want to delete club should check the checkbox seen on Figure 5 that is on the left handside of records. If users want to delete more than one record, multiple checking is permitted. After checking checkboxes, user should click the delete button to delete records.
 
 Update Operation
-----------------
+^^^^^^^^^^^^^^^^
 
 .. figure:: images/update.JPG
       :scale: 50 %
@@ -98,13 +98,13 @@ Informations page is located at Tournaments dropdown table in home page.
       Informations page
 
 Add Operation
--------------
+^^^^^^^^^^^^^
 
 Users want to add a information in the page should fill all the blanks on the table that are tournament name, olympic name, year and informations about tournaments. Year should be between 1900 and 2100. After clicking add button new record will be added.
 
 
 Delete Operation
-----------------
+^^^^^^^^^^^^^^^^
 
 .. figure:: images/delete.JPG
       :scale: 50 %
@@ -115,7 +115,7 @@ Delete Operation
 Users want to delete informations should check the checkbox seen on Figure 8 that is on the left handside of records. If users want to delete more than one record, multiple checking is permitted. After checking checkboxes, user should click the delete button to delete records.
 
 Update Operation
-----------------
+^^^^^^^^^^^^^^^^
 
 .. figure:: images/update.JPG
       :scale: 50 %

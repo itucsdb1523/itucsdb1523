@@ -1,6 +1,10 @@
 Parts Implemented by Emre Kerem ORGUN
 =====================================
 
+1. `Compound Archers Page`_
+2. `Sponsors Page`_
+3. `Compound Team Page`_
+
 Compound Archers Page
 ---------------------
 
@@ -8,9 +12,16 @@ On this page users can add, delete, update and display compound bow sportsmen.
 
 .. figure:: images/anasayfa_compound.PNG
       :scale: 100 %
+      :alt: Compound arhers page's Dropdown look
+
+      Compound arhers page's Dropdown look.
+
+.. figure:: images/compound_page.PNG
+      :scale: 100 %
       :alt: compound sportsmen table
 
       Compound arhers page.
+
 
 Add operation
 ^^^^^^^^^^^^^
@@ -26,7 +37,7 @@ In order to delete a compound sportsman from the table, user must select the rel
 Also user can delete multiple sportsmen at one time by selecting more than one sportsmen then clicking delete button.
 
 .. figure:: images/delete.JPG
-      :scale: 50 %
+      :scale: 100 %
       :alt: delete checkboxes
 
       Delete Checkboxes.
@@ -37,7 +48,7 @@ In order to update a compound sportsman information,after entering the new infor
 from the right and click the update button.
 
 .. figure:: images/delete.JPG
-      :scale: 50 %
+      :scale: 100 %
       :alt: update checkboxes
 
       Update Checkboxes.
@@ -48,7 +59,13 @@ Sponsors Page
 On this page users can add, delete, update and display Sponsors.
 
 .. figure:: images/anasayfa_sponsor.PNG
-      :scale: 75 %
+      :scale: 100 %
+      :alt: Sponsors page's Dropdown look
+
+      Sponsors page's Dropdown look
+
+.. figure:: images/Sponsor.PNG
+      :scale: 100 %
       :alt: Sponsors table
 
       Sponsors table.
@@ -70,3 +87,39 @@ Update operation
 ^^^^^^^^^^^^^^^^
 In order to update a sponsor information,after entering the new information, user must select the related radiobox
  from the right and click the update button.
+
+
+Compound Team Page
+------------------
+
+On this page users can add, delete, update and display Compound Teams. Also user can add compound sportsmen to the teams.
+However, this speciality does not work unfortunately.
+
+.. figure:: images/compound_teams.PNG
+      :scale: 100 %
+      :alt: Compound Teams Table
+
+      Compound Teams Table
+
+Add operation
+^^^^^^^^^^^^^
+In order to add a Compound Team to the table,user must enter the team name and contact information of that
+team and then click to add button.Also user have to enter all data otherwise a message comes to the screen that says that
+it is an obligation to fill all informations.After adding a team, in order to see the team members and delete the members
+from team, the user needs to click on the team's name. This page below is opened.
+
+.. figure:: images/compound_teams.PNG
+      :scale: 100 %
+      :alt: Compound Teams Table
+
+      Compound Teams Table
+
+Delete operation
+^^^^^^^^^^^^^^^^
+In order to delete a team from the table, user must select the related checkbox, and click on the delete button below.
+Also user can delete multiple teams at one time by selecting more than one teams then clicking delete button.
+
+Update operation
+^^^^^^^^^^^^^^^^
+In order to update a team information,after entering the new information, user must select the related radiobox
+from the right and click the update button.
