@@ -4,9 +4,15 @@ Developer Guide
 Database Design
 ---------------
 
-**explain the database design of your project**
+The database designed for this web application holds data related to archery such as recurve archers, compound archer, scores, countries, olympics, sponsors etc.
 
-**include the E/R diagram(s)**
+Countries table is the most referenced table in the database since it is used by all group members.
+
+Tables those are in relation with others are cascaded to keep referential integrity.
+
+PostgreSQL is the relational database management system used in Database Design.
+
+E/R diagrams of the database will be given seperately by each member.
 
 Code
 ----
