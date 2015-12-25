@@ -346,8 +346,10 @@ the same team information for every player in the team. In order to keep referen
       #create recurve_teams table
       query = """CREATE TABLE recurve_teams (
          id serial PRIMARY KEY,
-         team_id integer NOT NULL references team_info(id) ON DELETE CASCADE ON UPDATE CASCADE,
-         recurver_id integer NOT NULL references recurve_sportsmen(id) ON DELETE CASCADE ON UPDATE CASCADE
+         team_id integer NOT NULL references team_info(id)
+                                    ON DELETE CASCADE ON UPDATE CASCADE,
+         recurver_id integer NOT NULL references recurve_sportsmen(id)
+                                    ON DELETE CASCADE ON UPDATE CASCADE
          )"""
       cursor.execute(query)
 
@@ -498,7 +500,8 @@ In order to display a specific team, the id of the team is sent to the following
              statement="""SELECT * FROM recurve_sportsmen WHERE (id=%s)"""
              cursor2.execute(statement, (recurver_id,))
              aRecurver=cursor2.fetchone()
-             recurversInTeam.add_recurver(Recurver(aRecurver[0], aRecurver[1], aRecurver[2], aRecurver[3], aRecurver[4]))
+             recurversInTeam.add_recurver(Recurver(aRecurver[0], aRecurver[1],
+                                          aRecurver[2], aRecurver[3], aRecurver[4]))
          return render_template('recurve_team.html', recurvers=recurversInTeam.get_recurvers(),
-                                 recTableMessage=messageToShow, team=theTeam, current_year=thisYear,
-                                 allCountries=countries)
+                                 recTableMessage=messageToShow, team=theTeam,
+                                 current_year=thisYear, allCountries=countries)

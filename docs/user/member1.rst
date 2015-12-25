@@ -13,7 +13,7 @@ Register Page
 
 In this page, a visitor could register to the website. All of the information asked in the registration form are required.
 
-.. figure:: images/Register.jpg
+.. figure:: images/Register.png
       :scale: 50 %
       :alt: Registration page
 
@@ -26,7 +26,7 @@ Sign In Page
 
 This is the page where the user enters his/her e-mail address and password to login.
 
-.. figure:: images/Signin.jpg
+.. figure:: images/Signin.png
       :scale: 50 %
       :alt: Sign in page
 
@@ -37,7 +37,7 @@ My Profile
 
 In this page, users can update their e-mail address or password.
 
-.. figure:: images/MyProfile.jpg
+.. figure:: images/MyProfile.png
       :scale: 50 %
       :alt: Profile page
 
@@ -80,7 +80,7 @@ Recurve Archery Teams Page
 --------------------------
 In this page, recurve teams can be added to or deleted from the table. Also, recurve archers can be added to these teams. A team consists of 3 members. And, the same archer cannot be in different teams at the same time.
 
-.. figure:: images/RecurveTeams.jpg
+.. figure:: images/RecurveTeams.png
      :scale: 50 %
      :alt: Recurve Archery Teams page
 
@@ -109,7 +109,7 @@ Displaying Players in a Team
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To display a team and its members, simply click on the team name in the first table.
 
-.. figure:: images/ituspor.jpg
+.. figure:: images/ituspor.png
      :scale: 50 %
      :alt: Displaying players
 
