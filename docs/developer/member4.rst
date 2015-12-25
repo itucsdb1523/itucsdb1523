@@ -1,6 +1,12 @@
 Parts Implemented by Muhammet Afşin Karataş
 ===========================================
 
+.. figure:: images/diagram.png
+      :scale: 50 %
+      :alt: diagram for tables
+
+      Fig. 1: Diagram for my part of the database
+
 Mounted Sportsmen Table
 -----------------------
 
@@ -9,20 +15,20 @@ Creating
 
 Below is the MOUNTED_SPORTSMEN table;
 
-+-----------------+-----------------------+--------------+
-| Name            | Type                  | Restrictions |
-+=================+=======================+==============+
-| ID              | integer               | Primary key  |
-+-----------------+-----------------------+--------------+
-| NAME            | character varying(20) | Not null     |
-+-----------------+-----------------------+--------------+
-| SURNAME         | character varying(30) | Not null     |
-+-----------------+-----------------------+--------------+
-| BIRTH_YEAR      | integer               |              |
-+-----------------+-----------------------+--------------+
-| COUNTRY_ID      | integer               | Foreign key, |
-|                 |                       | Not null     |
-+-----------------+-----------------------+--------------+
++------------+-----------------------+--------------+
+| Name       | Type                  | Restrictions |
++============+=======================+==============+
+| ID         | integer               | Primary key  |
++------------+-----------------------+--------------+
+| NAME       | character varying(20) | Not null     |
++------------+-----------------------+--------------+
+| SURNAME    | character varying(30) | Not null     |
++------------+-----------------------+--------------+
+| BIRTH_YEAR | integer               |              |
++------------+-----------------------+--------------+
+| COUNTRY_ID | integer               | Foreign key, |
+|            |                       | Not null     |
++------------+-----------------------+--------------+
 
 COUNTRY_ID references to countries table
 
@@ -71,7 +77,9 @@ Display and Search
                         id, name, surname, birth_year, country_id = row
                         foundMountedArcherCol.addMountedArcher(MountedArcher(id, name, surname, birth_year, country_id))
             cursor.close()
-            return render_template('mounted.html', mountedArchers=allMountedArchers.getMountedArchers(), searchMountedArchers=foundMountedArcherCol.getMountedArchers(), allCountries=countries, current_time=now.ctime(), rec_Message=messageToShow, current_year=thisYear)
+            return render_template('mounted.html', mountedArchers=allMountedArchers.getMountedArchers(),
+               searchMountedArchers=foundMountedArcherCol.getMountedArchers(), allCountries=countries,
+               current_time=now.ctime(), rec_Message=messageToShow, current_year=thisYear)
 
 If the operation is search or we are just displaying information from the database the code above is run.
 
@@ -116,14 +124,16 @@ Insert and Update
                         session['ecb_message']="Sorry, this archer already exists."
                   elif 'mounted_archer_to_update' in request.form and action=='Update': #update
                         mountedArcherID=request.form.get('mounted_archer_to_update')
-                        query="""UPDATE MOUNTED_SPORTSMEN SET (NAME, SURNAME, BIRTH_YEAR, COUNTRY_ID)=(%s, %s, %s, %s) WHERE (ID=%s)"""
+                        query="""UPDATE MOUNTED_SPORTSMEN SET (NAME, SURNAME, BIRTH_YEAR, COUNTRY_ID)=(%s, %s, %s, %s)
+                           WHERE (ID=%s)"""
                         cursor.execute(query, (new_name, new_surname, new_birth_year, new_country_id, mountedArcherID))
                         connection.commit()
                         session['ecb_message']="Update successfull!"
                   elif action=='Update':
                         session['ecb_message']="Nothing is selected to update!"
                   else:
-                        query="""INSERT INTO MOUNTED_SPORTSMEN (NAME, SURNAME, BIRTH_YEAR, COUNTRY_ID) VALUES(%s, %s, %s, %s)"""
+                        query="""INSERT INTO MOUNTED_SPORTSMEN (NAME, SURNAME, BIRTH_YEAR, COUNTRY_ID)
+                           VALUES(%s, %s, %s, %s)"""
                         cursor.execute(query, (new_name, new_surname, new_birth_year, new_country_id))
                         connection.commit()
                         session['ecb_message']="Insertion successfull!"
@@ -150,18 +160,18 @@ Creating
 
 Below is the TOURNAMENT table;
 
-+-----------------+-----------------------+--------------+
-| Name            | Type                  | Restrictions |
-+=================+=======================+==============+
-| ID              | integer               | Primary key  |
-+-----------------+-----------------------+--------------+
-| NAME            | character varying(50) | Not null     |
-+-----------------+-----------------------+--------------+
-| COUNTRY_ID      | integer               | Foreign key, |
-|                 |                       | Not null     |
-+-----------------+-----------------------+--------------+
-| YEAR            | integer               |              |
-+-----------------+-----------------------+--------------+
++------------+-----------------------+--------------+
+| Name       | Type                  | Restrictions |
++============+=======================+==============+
+| ID         | integer               | Primary key  |
++------------+-----------------------+--------------+
+| NAME       | character varying(50) | Not null     |
++------------+-----------------------+--------------+
+| COUNTRY_ID | integer               | Foreign key, |
+|            |                       | Not null     |
++------------+-----------------------+--------------+
+| YEAR       | integer               |              |
++------------+-----------------------+--------------+
 
 COUNTRY_ID references to countries table
 
@@ -197,7 +207,9 @@ Display
             for row in cursor:
                   id, name, country_id, year = row
                   allTournaments.add_tournament(Tournament(id, name, country_id, year))
-            return render_template('tournament.html', tournaments=allTournaments.get_tournaments(), allCountries=countries, current_time=now.ctime(), rec_Message=messageToShow, current_year=thisYear)
+            return render_template('tournament.html', tournaments=allTournaments.get_tournaments(),
+               allCountries=countries, current_time=now.ctime(), rec_Message=messageToShow,
+               current_year=thisYear)
 
 To display the information we get the infromation from countries and tournament tables with the select queries. Then we create the objects for each row. Then this object are sent to the page.
 
@@ -268,17 +280,17 @@ Creating
 
 Below is the SCORE table;
 
-+-----------------+-----------------------+---------------------+
-| Name            | Type                  | Restrictions        |
-+=================+=======================+=====================+
-| ID              | integer               | Primary key         |
-+-----------------+-----------------------+---------------------+
-| ARCHER_ID       | integer               | Foreign key, Unique |
-+-----------------+-----------------------+---------------------+
-| TOURNAMENT_ID   | integer               | Foreign key, Unique |
-+-----------------+-----------------------+---------------------+
-| SCORE           | integer               |                     |
-+-----------------+-----------------------+---------------------+
++---------------+---------+---------------------+
+| Name          | Type    | Restrictions        |
++===============+=========+=====================+
+| ID            | integer | Primary key         |
++---------------+---------+---------------------+
+| ARCHER_ID     | integer | Foreign key, Unique |
++---------------+---------+---------------------+
+| TOURNAMENT_ID | integer | Foreign key, Unique |
++---------------+---------+---------------------+
+| SCORE         | integer |                     |
++---------------+---------+---------------------+
 
 ARCHER_ID references to recurve_sportsmen table
 
@@ -314,7 +326,8 @@ Display
                 s.add_score(Score(id, archer_id,tournament_id,score))
             scores = s.get_scores()
             now = datetime.datetime.now()
-            return render_template('scores.html', current_time=now.ctime(), scores=scores, rec_Message=messageToShow)
+            return render_template('scores.html', current_time=now.ctime(), scores=scores,
+               rec_Message=messageToShow)
 
 To display the information we get the infromation scroe table with the select query. """SELECT ID, ARCHERID, TOURNAMENTID, SCORE FROM SCORE"""
 Then we create the objects for each row. Then this object are sent to the page.
@@ -353,7 +366,8 @@ Insert and Update
                   cursor.execute(query, (tournament_id,))
                   tournament=cursor.fetchone()
                   if archer is None or tournament is None:
-                        session['ecb_message']="Archer or the Tournament is not in our database! Check if they both exists in database."
+                        session['ecb_message']="Archer or the Tournament is not in our database!
+                           Check if they both exists in database."
                         return redirect(url_for('scores_page'))
                   query="""SELECT * FROM SCORE WHERE (ARCHERID=%s) AND (TOURNAMENTID=%s)"""
                   cursor.execute(query, (archer_id, tournament_id))
@@ -362,7 +376,8 @@ Insert and Update
                         if 'score_to_update' in request.form:
                               scoreID=request.form.get('score_to_update')
                               if s is None or (s is not None and s[0]==int(scoreID)):
-                                    query="""UPDATE SCORE SET (ARCHERID, TOURNAMENTID, SCORE)=(%s, %s, %s) WHERE (ID=%s)"""
+                                    query="""UPDATE SCORE SET (ARCHERID, TOURNAMENTID, SCORE)=(%s, %s, %s)
+                                       WHERE (ID=%s)"""
                                     cursor.execute(query, (archer_id, tournament_id, score, scoreID))
                                     connection.commit()
                                     session['ecb_message']="Update successfull!"
