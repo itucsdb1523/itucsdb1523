@@ -108,11 +108,11 @@ team and then click to add button.Also user have to enter all data otherwise a m
 it is an obligation to fill all informations.After adding a team, in order to see the team members and delete the members
 from team, the user needs to click on the team's name. This page below is opened.
 
-.. figure:: images/compound_teams.PNG
+.. figure:: images/single_team.PNG
       :scale: 100 %
-      :alt: Compound Teams Table
+      :alt: Single Team Table
 
-      Compound Teams Table
+      Single Team Table
 
 Delete operation
 ^^^^^^^^^^^^^^^^
