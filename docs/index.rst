@@ -11,7 +11,9 @@ Welcome to itucsdb1523's documentation!
    * Muhammed Afşin KARATAŞ
    * Emre Kerem ORGUN
 
-**project description goes here (a few paragraphs)**
+**This is the documentation for the "Archery" project.**
+
+**This project is developed for the BLG361 - Database Management Systems course in the semester 2015-2016 Fall at Istanbul Technical University.**
 
 Contents:
 

@@ -1,16 +1,9 @@
 User Guide
 ==========
 
-**explain how your application works from the user perspective, use
-screenshots whereever appropriate**
+**This guide is prepared for helping users to navigate between web pages easily and to execute the operations they want properly.**
 
-**to add a picture, use the following example**::
-
-   .. figure:: picture.png
-      :scale: 150 %
-      :alt: map to buried treasure
-
-      This is the caption of the figure (a simple paragraph).
+**User guides for different pages can be accessible on the tree below.**
 
 .. toctree::
 
